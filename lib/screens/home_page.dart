@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sportify_app/dto/fields.dart';
+import 'package:sportify_app/screens/field_detail_screen.dart';
 import 'package:sportify_app/utils/constants.dart';
-import 'package:sportify_app/widgets/form.dart';
-//import 'package:carousel_slider/carousel_slider.dart';
+import 'package:sportify_app/widgets/flexible_form_input.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,10 +13,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _selectedActivity = 'Badminton';
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   void _selectActivity(String activity) {
     setState(() {
       _selectedActivity = activity;
+      _searchQuery = ''; // Reset search query when activity changes
+      _searchController.clear(); // Clear search input field
+    });
+  }
+
+  void _updateSearchQuery(String? query) {
+    setState(() {
+      _searchQuery = query ?? '';
     });
   }
 
@@ -155,91 +166,131 @@ class _HomePageState extends State<HomePage> {
         break;
     }
 
+    // Filter fieldList based on search query
+    List<Map<String, String>> filteredList = fieldList.where((field) {
+      return field['courtName']!
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          field['location']!.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    if (filteredList.isEmpty) {
+      return const Expanded(
+        child: Center(
+          child: Text(
+            'No fields found.',
+            style: TextStyle(
+              color: Constants.primaryColor,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Expanded(
       child: ListView.builder(
-        itemCount: fieldList.length,
+        itemCount: filteredList.length,
         itemBuilder: (context, index) {
-          String fileName = fieldList[index]['fileName']!;
-          String courtName = fieldList[index]['courtName']!;
-          String location = fieldList[index]['location']!;
-          return Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(bottom: 15),
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      width: 350,
-                      height: 170,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.asset(
-                              'assets/images/$fileName',
-                              fit: BoxFit.cover,
-                            ),
-                            Container(
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Constants.primaryColor,
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+          String fileName = filteredList[index]['fileName']!;
+          String courtName = filteredList[index]['courtName']!;
+          String location = filteredList[index]['location']!;
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FieldDetailScreen(
+                    fieldDetail: FieldDetail(
+                      fileName: fileName,
+                      courtName: courtName,
+                      location: location,
+                      description: '', 
+                      price: 0.0, imageFile: '', 
                     ),
-                    Positioned(
-                      bottom: 10,
-                      left: 0,
-                      right: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              courtName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
+                  ),
+                ),
+              );
+            },
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: 350,
+                        height: 170,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.asset(
+                                'assets/images/$fileName',
+                                fit: BoxFit.cover,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  location,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 14,
+                              Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Constants.primaryColor,
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 10,
+                        left: 0,
+                        right: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                courtName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    location,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -256,35 +307,36 @@ class _HomePageState extends State<HomePage> {
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/images/home_bg.png"),
-                  fit: BoxFit.cover,
-                ),
+                gradient: RadialGradient(colors: [
+                  Color.fromARGB(255, 90, 137, 158),
+                  Constants.scaffoldBackgroundColor
+                ], focal: Alignment.center, radius: 1.0),
               ),
             ),
             Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(10, 20, 10, 30),
-                  child: Container( //container slide banner
+                  child: Container(
+                    //container slide banner
                     width: 350,
                     height: 180,
                     decoration: const BoxDecoration(
                       color: Constants.primaryColor,
                       borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
-                    child: const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 30, 20, 15),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 30, 20, 15),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Hi, Dwik!",
                             style: TextStyle(
                               color: Constants.scaffoldBackgroundColor,
                             ),
                           ),
-                          Text(
+                          const Text(
                             "What you would \nlike to do?",
                             style: TextStyle(
                               color: Constants.scaffoldBackgroundColor,
@@ -292,11 +344,13 @@ class _HomePageState extends State<HomePage> {
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          SizedBox(height: 10),
-                          InputWidget(
+                          const SizedBox(height: 10),
+                          FlexibleInputWidget(
                             hintText: "Find a field",
                             height: 35,
                             prefixIcon: Icons.search,
+                            controller: _searchController,
+                            onChanged: _updateSearchQuery,
                           ),
                         ],
                       ),
@@ -389,8 +443,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         GestureDetector(
           onTap: () {
-            _selectActivity(
-                activity);
+            _selectActivity(activity);
           },
           child: Container(
             width: 70,
@@ -408,10 +461,10 @@ class _HomePageState extends State<HomePage> {
                 BoxShadow(
                   color: isSelected
                       ? Constants.secondaryColor.withOpacity(0.5)
-                      : Colors.transparent, 
+                      : Colors.transparent,
                   spreadRadius: 3,
                   blurRadius: 5,
-                  offset: const  Offset(0, 3), 
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),

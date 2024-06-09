@@ -1,27 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sportify_app/cubit/auth/auth_cubit.dart';
-import 'package:sportify_app/cubit/balance/balance_cubit.dart';
-import 'package:sportify_app/cubit/counter_cubit.dart';
 import 'package:sportify_app/screens/about_page.dart';
-import 'package:sportify_app/screens/customer_service/cs_form.dart';
-import 'package:sportify_app/screens/customer_service/cs_screen.dart';
-import 'package:sportify_app/screens/latihan/datas_screen.dart';
-import 'package:sportify_app/screens/form_screen.dart';
 import 'package:sportify_app/screens/history_page.dart';
 import 'package:sportify_app/screens/home_page.dart';
 import 'package:sportify_app/screens/landing_page.dart';
 import 'package:sportify_app/screens/login_screen.dart';
-import 'package:sportify_app/screens/latihan/latihan_api.dart';
-import 'package:sportify_app/screens/latihan/latihan_sqllite.dart';
 import 'package:sportify_app/screens/notification_page.dart';
 import 'package:sportify_app/screens/profile_page.dart';
 import 'package:sportify_app/screens/register_page.dart';
-import 'package:sportify_app/screens/routes/BalanceScreen/balance_screen.dart';
-import 'package:sportify_app/screens/routes/SpendingScreen/spending_form_screen.dart';
-import 'package:sportify_app/screens/routes/SpendingScreen/spending_screen.dart';
-import 'package:sportify_app/screens/routes/counter_screen.dart';
-import 'package:sportify_app/screens/routes/welcome_screen.dart';
 import 'package:sportify_app/screens/setting_page.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -40,32 +25,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<CounterCubit>(create: (context) => CounterCubit()),
-        BlocProvider<BalanceCubit>(create: (context) => BalanceCubit()),
-        BlocProvider<AuthCubit>(create: (context) => AuthCubit())
-      ],
-      child: ScreenUtilInit(
-        designSize: const Size(375, 812),
-        builder: (BuildContext context, Widget? child) {
-          return MaterialApp(
-            title: 'Sportify App',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              scaffoldBackgroundColor: Constants.scaffoldBackgroundColor,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-              textTheme: GoogleFonts.montserratTextTheme(),
-            ),
-            initialRoute: "/landing",
-            onGenerateRoute: _onGenerateRoute,
-            routes: {
-              '/home': (context) =>
-                  MainScreen(title: 'Sportify', scaffoldKey: scaffoldKey),
-            },
-          );
-        },
-      ),
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      builder: (BuildContext context, Widget? child) {
+        return MaterialApp(
+          title: 'Sportify App',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            scaffoldBackgroundColor: Constants.scaffoldBackgroundColor,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            textTheme: GoogleFonts.montserratTextTheme(),
+          ),
+          initialRoute: "/landing",
+          onGenerateRoute: _onGenerateRoute,
+          routes: {
+            '/home': (context) =>
+                MainScreen(title: 'Sportify', scaffoldKey: scaffoldKey),
+          },
+        );
+      },
     );
   }
 }
@@ -108,54 +86,6 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (BuildContext context) {
         return const NotificationPage();
       });
-    case "/latihan-API":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const LatihanAPI();
-      });
-    case "/latihan-CRUD":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const LatihanSQLlite();
-      });
-    case "/datas":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const DataScreen();
-      });
-    case "/form-screen":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const FormScreen();
-      });
-    case "/customer-screen":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const CustomerScreen();
-      });
-    case "/cs-form-screen":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const CSFormScreen();
-      });
-    // case "/division-screen":
-    //   return MaterialPageRoute(builder: (BuildContext context) {
-    //     return const CSFormScreen();
-    //   });
-    case "/counter":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const CounterScreen();
-      });
-    case "/welcome":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const WelcomeScreen();
-      });
-    case "/balance":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const BalanceScreen();
-      });
-    case "/spending":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const SpendingScreen();
-      });
-    // case "/spending-form":
-    //   return MaterialPageRoute(builder: (BuildContext context) {
-    //     return const SpendingFormScreen(onSubmi)
-    //   });
     default:
       return MaterialPageRoute(builder: (BuildContext context) {
         return const LandingPage();
@@ -179,10 +109,10 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _page = [
     const HomePage(),
     const HistoryPage(),
-    const SettingPage(),
+    const ProfilePage(),
   ];
 
-  final List<String> _appBarTitles = const ['Sportify', 'History', 'Setting'];
+  final List<String> _appBarTitles = const ['Sportify', 'History', 'Profile'];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -207,22 +137,22 @@ class _MainScreenState extends State<MainScreen> {
               nextScreen(context, '/notification');
             },
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: GestureDetector(
-              onTap: () {
-                nextScreen(context, '/profile');
-              },
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundColor: Constants.primaryColor,
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundImage: AssetImage('assets/images/basketball.jpg'),
-                ),
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 10),
+          //   child: GestureDetector(
+          //     onTap: () {
+          //       nextScreen(context, '/profile');
+          //     },
+          //     child: const CircleAvatar(
+          //       radius: 18,
+          //       backgroundColor: Constants.primaryColor,
+          //       child: CircleAvatar(
+          //         radius: 16,
+          //         backgroundImage: AssetImage('assets/images/basketball.jpg'),
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
 
@@ -233,10 +163,10 @@ class _MainScreenState extends State<MainScreen> {
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage("assets/images/home_bg.png"),
-                    fit: BoxFit.cover),
-              ),
+                  gradient: RadialGradient(colors: [
+                Color.fromARGB(255, 90, 137, 158),
+                Constants.scaffoldBackgroundColor
+              ], focal: Alignment.center, radius: 1.0)),
               child: Column(
                 children: [
                   GestureDetector(
@@ -266,151 +196,6 @@ class _MainScreenState extends State<MainScreen> {
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
-              child: Text("Latihan", style: TextStyle(color:Colors.grey),), 
-            ),
-            const Divider(),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Latihan API'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/latihan-API');
-              },
-            ),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Latihan CRUD'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/latihan-CRUD');
-              },
-            ),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Latihan Data'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/datas');
-              },
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-              child: Text('UTS (Customer Service)', style: TextStyle(color: Colors.grey),),
-            ),
-            const Divider(),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Customer Service'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/customer-screen');
-              },
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-              child: Text('Latihan BLoC Cubit', style: TextStyle(color: Colors.grey),),
-            ),
-            const Divider(),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Welcome Screen'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/welcome');
-              },
-            ),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Counter Screen'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/counter');
-              },
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-              child: Text('Latihan BLoC Cubit', style: TextStyle(color: Colors.grey),),
-            ),
-            const Divider(),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Balance Screen'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/balance');
-              },
-            ),
-            ListTile(
-              title: const Row(
-                children: [
-                  Text('Spending Screen'),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-              onTap: () {
-                nextScreen(context, '/spending');
-              },
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-              child: Text('Others', style: TextStyle(color: Colors.grey),),
-            ),
-            const Divider(),
             ListTile(
               title: const Row(
                 children: [
@@ -460,10 +245,10 @@ class _MainScreenState extends State<MainScreen> {
               labelStyle: TextStyle(color: Constants.activeMenu)),
           CurvedNavigationBarItem(
               child: Icon(
-                Icons.settings,
+                Icons.person,
                 color: Constants.activeMenu,
               ),
-              label: 'Setting',
+              label: 'Profile',
               labelStyle: TextStyle(color: Constants.activeMenu)),
         ],
         onTap: _onItemTapped,

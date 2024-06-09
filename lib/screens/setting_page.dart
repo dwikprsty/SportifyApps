@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/utils/helper.dart';
 import 'package:sportify_app/widgets/button.dart';
 
@@ -13,18 +14,19 @@ class SettingPage extends StatelessWidget {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("assets/images/home_bg.png"),
-                fit: BoxFit.cover),
-          ),
+              gradient: RadialGradient(colors: [
+            Color.fromARGB(255, 90, 137, 158),
+            Constants.scaffoldBackgroundColor
+          ], focal: Alignment.center, radius: 1.0)),
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: Column(
               children: [
                 const SizedBox(height: 30),
                 const CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/basketball.jpg'),maxRadius: 40,
-                  ),
+                  backgroundImage: AssetImage('assets/images/basketball.jpg'),
+                  maxRadius: 40,
+                ),
                 const SizedBox(
                   height: 10,
                 ),
