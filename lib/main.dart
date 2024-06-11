@@ -7,7 +7,7 @@ import 'package:sportify_app/screens/login_screen.dart';
 import 'package:sportify_app/screens/notification_page.dart';
 import 'package:sportify_app/screens/profile_page.dart';
 import 'package:sportify_app/screens/register_page.dart';
-import 'package:sportify_app/screens/setting_page.dart';
+// import 'package:sportify_app/screens/setting_page.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sportify_app/utils/constants.dart';
@@ -70,10 +70,10 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (BuildContext context) {
         return const HistoryPage();
       });
-    case "/setting":
-      return MaterialPageRoute(builder: (BuildContext context) {
-        return const SettingPage();
-      });
+    // case "/setting":
+    //   return MaterialPageRoute(builder: (BuildContext context) {
+    //     return const SettingPage();
+    //   });
     case "/profile":
       return MaterialPageRoute(builder: (BuildContext context) {
         return const ProfilePage();
