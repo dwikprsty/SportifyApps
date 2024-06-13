@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../utils/constants.dart';
 
-class InputWidget extends StatelessWidget {
+class SearchWidget extends StatelessWidget {
   final String hintText;
   final IconData? prefixIcon;
   final double height;
@@ -12,7 +12,7 @@ class InputWidget extends StatelessWidget {
   final TextEditingController? controller;
   final void Function(String)? onChanged;
 
-  const InputWidget({
+  const SearchWidget({
     super.key,
     required this.hintText,
     this.prefixIcon,
@@ -57,7 +57,7 @@ class InputWidget extends StatelessWidget {
                 color: Color.fromRGBO(105, 108, 121, 0.7),
               ),
               prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-              suffixIcon: suffixIcon,
+              suffixIcon: Icon(Icons.search),
             ),
             onChanged: onChanged,
           ),

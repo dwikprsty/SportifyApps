@@ -158,7 +158,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                   controller: TextEditingController(text: _selectedDate),
                   suffixIcon: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context),
-                  readOnly: true,
+                  readOnly: true, 
                 ),
                 const SizedBox(height: 30),
                 Row(

@@ -13,7 +13,7 @@ class FlexibleInputWidget extends StatelessWidget {
   final bool obscureText;
   final Widget? suffixIcon;
   final TextEditingController? controller;
-  final void Function(String)? onTextChanged;
+  final ValueChanged<String?>? onTextChanged;
   final dynamic onTap;
   final bool readOnly;
   final bool isDropdown;
