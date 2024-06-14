@@ -5,7 +5,7 @@ import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();

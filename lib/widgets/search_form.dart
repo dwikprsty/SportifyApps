@@ -6,8 +6,6 @@ class SearchWidget extends StatelessWidget {
   final String hintText;
   final IconData? prefixIcon;
   final double height;
-  final String topLabel;
-  final bool obscureText;
   final Widget? suffixIcon;
   final TextEditingController? controller;
   final void Function(String)? onChanged;
@@ -17,8 +15,6 @@ class SearchWidget extends StatelessWidget {
     required this.hintText,
     this.prefixIcon,
     this.height = 48.0,
-    this.topLabel = "",
-    this.obscureText = false,
     this.suffixIcon,
     this.controller,
     this.onChanged,
@@ -29,7 +25,6 @@ class SearchWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (topLabel.isNotEmpty) Text(topLabel),
         const SizedBox(height: 5.0),
         Container(
           height: ScreenUtil().setHeight(height),
@@ -38,8 +33,7 @@ class SearchWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(10.0),
           ),
           child: TextFormField(
-            controller: controller, // Gunakan controller yang diberikan
-            obscureText: obscureText,
+            controller: controller, 
             decoration: InputDecoration(
               enabledBorder: const OutlineInputBorder(
                 borderSide: BorderSide(
@@ -57,7 +51,7 @@ class SearchWidget extends StatelessWidget {
                 color: Color.fromRGBO(105, 108, 121, 0.7),
               ),
               prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-              suffixIcon: Icon(Icons.search),
+              suffixIcon: const Icon(Icons.search),
             ),
             onChanged: onChanged,
           ),

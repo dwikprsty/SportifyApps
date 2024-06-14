@@ -15,6 +15,7 @@ class FieldDetailScreen extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _FieldDetailScreenState createState() => _FieldDetailScreenState();
 }
 
@@ -164,7 +165,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                 Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
+              SizedBox(
                 width: 150,
                 child: FlexibleInputWidget(
                   isDropdown: true,
@@ -180,7 +181,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                   fillColor: Constants.scaffoldBackgroundColor,
                 ),
               ),
-              Container(
+              SizedBox(
                 width: 180,
                 child: FlexibleInputWidget(
                   isDropdown: true,

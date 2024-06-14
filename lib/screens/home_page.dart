@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sportify_app/dto/fields.dart';
+import 'package:sportify_app/screens/field_detail_screen.dart';
 import 'package:sportify_app/utils/constants.dart';
-import 'package:sportify_app/widgets/flexible_form_input.dart';
 import 'package:sportify_app/widgets/search_form.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,9 +29,10 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _searchQuery = query ?? '';
     });
-    print('Search query updated: $_searchQuery');  // Debugging line
-}
-
+    if (kDebugMode) {
+      print('Search query updated: $_searchQuery');
+    } 
+  }
 
   Widget _buildFieldList(String sport) {
     List<Map<String, String>> fieldList = [];
@@ -169,16 +172,17 @@ class _HomePageState extends State<HomePage> {
 
     // Filter fieldList based on search query
     List<Map<String, String>> filteredList = fieldList.where((field) {
-  bool matchesCourtName = field['courtName']!
-      .toLowerCase()
-      .contains(_searchQuery.toLowerCase());
-  bool matchesLocation = field['location']!
-      .toLowerCase()
-      .contains(_searchQuery.toLowerCase());
-  print('Matching ${field['courtName']} - court name: $matchesCourtName, location: $matchesLocation');
-  return matchesCourtName || matchesLocation;
-}).toList();
-
+      bool matchesCourtName = field['courtName']!
+          .toLowerCase()
+          .contains(_searchQuery.toLowerCase());
+      bool matchesLocation =
+          field['location']!.toLowerCase().contains(_searchQuery.toLowerCase());
+      if (kDebugMode) {
+        print(
+          'Matching ${field['courtName']} - court name: $matchesCourtName, location: $matchesLocation');
+      }
+      return matchesCourtName || matchesLocation;
+    }).toList();
 
     return Expanded(
       child: filteredList.isEmpty
@@ -194,85 +198,104 @@ class _HomePageState extends State<HomePage> {
                 String fileName = filteredList[index]['fileName']!;
                 String courtName = filteredList[index]['courtName']!;
                 String location = filteredList[index]['location']!;
-                return Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 15),
-                      child: Stack(
-                        children: [
-                          SizedBox(
-                            width: 350,
-                            height: 170,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/$fileName',
-                                    fit: BoxFit.cover,
-                                  ),
-                                  Container(
-                                    decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.transparent,
-                                          Constants.primaryColor,
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FieldDetailScreen(
+                          fieldDetail: FieldDetail(
+                            fileName: fileName,
+                            imageFile: 'assets/images/$fileName',
+                            courtName: courtName,
+                            location: location,
+                            description: 'A detailed description of the court.',
+                            price: 50.0, // Sample price
                           ),
-                          Positioned(
-                            bottom: 10,
-                            left: 0,
-                            right: 0,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    courtName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 15),
+                        child: Stack(
+                          children: [
+                            SizedBox(
+                              width: 350,
+                              height: 170,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/$fileName',
+                                      fit: BoxFit.cover,
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.location_on,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        location,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w300,
-                                          fontSize: 14,
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Constants.primaryColor,
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            Positioned(
+                              bottom: 10,
+                              left: 0,
+                              right: 0,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      courtName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          location,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
@@ -298,44 +321,68 @@ class _HomePageState extends State<HomePage> {
             Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(10, 20, 10, 30),
-                  child: Container(
-                    //container slide banner
-                    width: 350,
-                    height: 180,
-                    decoration: const BoxDecoration(
-                      color: Constants.primaryColor,
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 30, 20, 15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Hi, Dwik!',
-                            style: TextStyle(
-                                color: Constants.scaffoldBackgroundColor),
-                          ),
-                          const Text(
-                            "What you would \nlike to do?",
-                            style: TextStyle(
-                              color: Constants.scaffoldBackgroundColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SearchWidget(
-                            hintText: "Find a field",
-                            height: 35,
-                            controller: _searchController,
-                            onChanged: _updateSearchQuery,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 10, 30),
+                  child: Stack(
+  children: [
+    Container(
+      //container slide banner
+      width: 350,
+      height: 180,
+      decoration: const BoxDecoration(
+        color: Constants.primaryColor,
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        image: DecorationImage(
+          image: AssetImage("assets/images/home_bg.jpg"),
+          fit: BoxFit.cover,
+        ),
+      ),
+    ),
+    Container(
+      width: 350,
+      height: 180,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color.fromARGB(255, 1, 42, 58).withOpacity(0.8), 
+            Colors.transparent,            
+          ],
+        ),
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(10, 30, 20, 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Hi, Dwik!',
+            style: TextStyle(
+                color: Constants.scaffoldBackgroundColor),
+          ),
+          const Text(
+            "What you would \nlike to do?",
+            style: TextStyle(
+              color: Constants.scaffoldBackgroundColor,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SearchWidget(
+            hintText: "Find a field",
+            height: 35,
+            controller: _searchController,
+            onChanged: _updateSearchQuery,
+          ),
+        ],
+      ),
+    ),
+  ],
+),
+
                 ),
                 SingleChildScrollView(
                   child: Container(
