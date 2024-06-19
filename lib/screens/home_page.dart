@@ -20,8 +20,8 @@ class _HomePageState extends State<HomePage> {
   void _selectActivity(String activity) {
     setState(() {
       _selectedActivity = activity;
-      _searchQuery = ''; // Reset search query when activity changes
-      _searchController.clear(); // Clear search input field
+      _searchQuery = ''; 
+      _searchController.clear(); 
     });
   }
 
@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                             courtName: courtName,
                             location: location,
                             description: 'A detailed description of the court.',
-                            price: 50.0, // Sample price
+                            price: 50.0, 
                           ),
                         ),
                       ),

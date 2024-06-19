@@ -68,11 +68,10 @@ class AboutPage extends StatelessWidget {
                     autoPlayCurve: Curves.fastOutSlowIn,
                     pauseAutoPlayOnTouch: true,
                     viewportFraction: 0.8,
+                    
                   ),
-                  items: imgList.map((item) => Container(
-                    child: Center(
-                      child: Image.asset(item, fit: BoxFit.contain, width: 1000),
-                    ),
+                  items: imgList.map((item) => Center(
+                    child: Image.asset(item, fit: BoxFit.contain, width: 1000),
                   )).toList(),
                 ),
                 const SizedBox(height: 10),

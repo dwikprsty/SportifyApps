@@ -1,5 +1,13 @@
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sportify_app/cubit/auth/auth_cubit.dart';
+import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/screens/about_page.dart';
+import 'package:sportify_app/screens/admin/edit_field_info.dart';
 import 'package:sportify_app/screens/history_page.dart';
 import 'package:sportify_app/screens/home_page.dart';
 import 'package:sportify_app/screens/landing_page.dart';
@@ -7,12 +15,8 @@ import 'package:sportify_app/screens/login_screen.dart';
 import 'package:sportify_app/screens/notification_page.dart';
 import 'package:sportify_app/screens/profile_page.dart';
 import 'package:sportify_app/screens/register_page.dart';
-// import 'package:sportify_app/screens/setting_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:sportify_app/services/data_service.dart';
 import 'package:sportify_app/utils/constants.dart';
-import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
-import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:sportify_app/utils/helper.dart';
 
 void main() {
@@ -25,25 +29,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812),
-      builder: (BuildContext context, Widget? child) {
-        return MaterialApp(
-          title: 'Sportify App',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            scaffoldBackgroundColor: Constants.scaffoldBackgroundColor,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            textTheme: GoogleFonts.montserratTextTheme(),
-          ),
-          initialRoute: "/landing",
-          onGenerateRoute: _onGenerateRoute,
-          routes: {
-            '/home': (context) =>
-                MainScreen(title: 'Sportify', scaffoldKey: scaffoldKey),
-          },
-        );
-      },
+    return MultiBlocProvider(
+      providers: [BlocProvider<AuthCubit>(create: (context) => AuthCubit())],
+      child: ScreenUtilInit(
+        designSize: const Size(375, 812),
+        builder: (BuildContext context, Widget? child) {
+          return MaterialApp(
+            title: 'Sportify App',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              scaffoldBackgroundColor: Constants.scaffoldBackgroundColor,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+              textTheme: GoogleFonts.montserratTextTheme(),
+            ),
+            initialRoute: "/landing",
+            onGenerateRoute: _onGenerateRoute,
+            routes: {
+              '/home': (context) =>
+                  MainScreen(title: 'Sportify', scaffoldKey: scaffoldKey),
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -70,10 +77,10 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (BuildContext context) {
         return const HistoryPage();
       });
-    // case "/setting":
-    //   return MaterialPageRoute(builder: (BuildContext context) {
-    //     return const SettingPage();
-    //   });
+// case "/setting":
+// return MaterialPageRoute(builder: (BuildContext context) {
+// return const SettingPage();
+// });
     case "/profile":
       return MaterialPageRoute(builder: (BuildContext context) {
         return const ProfilePage();
@@ -85,6 +92,22 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
     case "/notification":
       return MaterialPageRoute(builder: (BuildContext context) {
         return const NotificationPage();
+      });
+    case "/edit-field-info":
+      return MaterialPageRoute(builder: (BuildContext context) {
+        final args = settings.arguments;
+        if (args is FieldDetail) {
+          return EditFieldScreen(field: args);
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Error'),
+            ),
+            body: const Center(
+              child: Text('Invalid arguments for EditFieldScreen'),
+            ),
+          );
+        }
       });
     default:
       return MaterialPageRoute(builder: (BuildContext context) {
@@ -137,26 +160,9 @@ class _MainScreenState extends State<MainScreen> {
               nextScreen(context, '/notification');
             },
           ),
-          // Padding(
-          //   padding: const EdgeInsets.only(right: 10),
-          //   child: GestureDetector(
-          //     onTap: () {
-          //       nextScreen(context, '/profile');
-          //     },
-          //     child: const CircleAvatar(
-          //       radius: 18,
-          //       backgroundColor: Constants.primaryColor,
-          //       child: CircleAvatar(
-          //         radius: 16,
-          //         backgroundImage: AssetImage('assets/images/basketball.jpg'),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-        ],
-      ),
 
-      //drawer
+        ],
+      ), //drawer
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -217,7 +223,9 @@ class _MainScreenState extends State<MainScreen> {
                 ],
               ),
               onTap: () {
-                nextScreen(context, '/');
+                context.read<AuthCubit>().logout();
+                DataService.logoutData();
+                Navigator.pushReplacementNamed(context, '/login');
               },
             ),
           ],

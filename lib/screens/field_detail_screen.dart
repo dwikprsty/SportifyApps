@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/utils/constants.dart';
-import 'package:intl/intl.dart';
+import 'package:sportify_app/utils/helper.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
-
 
 class FieldDetailScreen extends StatefulWidget {
   final FieldDetail fieldDetail;
@@ -15,7 +17,7 @@ class FieldDetailScreen extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
+// ignore: library_private_types_in_public_api
   _FieldDetailScreenState createState() => _FieldDetailScreenState();
 }
 
@@ -23,6 +25,14 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
   String? _selectedDate;
   String? _selectedTime;
   String? _selectedDuration;
+  bool isAdmin = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isAdmin = context.read<AuthCubit>().state.dataUser!.isAdmin; 
+  }
 
   final List<String> _times = [
     '08:00',
@@ -64,7 +74,6 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final field = widget.fieldDetail;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(field.courtName),
@@ -159,56 +168,66 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                   controller: TextEditingController(text: _selectedDate),
                   suffixIcon: const Icon(Icons.calendar_today),
                   onTap: () => _selectDate(context),
-                  readOnly: true, 
+                  readOnly: true,
                 ),
                 const SizedBox(height: 30),
                 Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: 150,
-                child: FlexibleInputWidget(
-                  isDropdown: true,
-                  topLabel: 'Time',
-                  hintText: 'Select Time',
-                  value: _selectedTime,
-                  items: _times,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedTime = value!;
-                    });
-                  },
-                  fillColor: Constants.scaffoldBackgroundColor,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      child: FlexibleInputWidget(
+                        isDropdown: true,
+                        topLabel: 'Time',
+                        hintText: 'Select Time',
+                        value: _selectedTime,
+                        items: _times,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTime = value!;
+                          });
+                        },
+                        fillColor: Constants.scaffoldBackgroundColor,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 180,
+                      child: FlexibleInputWidget(
+                        isDropdown: true,
+                        topLabel: 'Duration',
+                        hintText: 'Select Duration',
+                        value: _selectedDuration,
+                        items: _durations,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedDuration = value!;
+                          });
+                        },
+                        fillColor: Constants.scaffoldBackgroundColor,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(
-                width: 180,
-                child: FlexibleInputWidget(
-                  isDropdown: true,
-                  topLabel: 'Duration',
-                  hintText: 'Select Duration',
-                  value: _selectedDuration,
-                  items: _durations,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDuration = value!;
-                    });
-                  },
-                  fillColor: Constants.scaffoldBackgroundColor,
-                ),
-              ),
-            ],
-          ),
-
                 const SizedBox(height: 40),
                 Center(
-                  child: AppButton(
-                    type: ButtonType.PRIMARY,
-                    onPressed: () {
-                      // Implement booking functionality
-                    },
-                    text: 'Book Now',
-                  ),
+                  child: isAdmin
+                      ? AppButton(
+                          type: ButtonType.PRIMARY,
+                          onPressed: () {
+                            nextScreen(
+                              context,
+                              '/edit-field-info',
+                              arguments: field,
+                            );
+                          },
+                          text: 'Edit',
+                        )
+                      : AppButton(
+                          type: ButtonType.PRIMARY,
+                          onPressed: () {
+                          },
+                          text: 'Book Now',
+                        ),
                 ),
               ],
             ),

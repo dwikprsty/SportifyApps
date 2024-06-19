@@ -1,6 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sportify_app/cubit/auth/auth_cubit.dart';
+import 'package:sportify_app/dto/login.dart';
+import 'package:sportify_app/dto/user.dart';
+import 'package:sportify_app/services/data_service.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/utils/helper.dart';
+import 'package:sportify_app/utils/secure_storage_util.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
 
@@ -17,8 +25,39 @@ class _LoginPageState extends State<LoginPage> {
   bool rememberMe = false;
   bool _isObscure = true;
 
+  Future<void> sendLogin(BuildContext context, AuthCubit authCubit) async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    final response = await DataService.sendLoginData(email, password);
+    if (response.statusCode == 200) {
+      debugPrint("sending success");
+      final data = jsonDecode(response.body);
+      final loggedIn = Login.fromJson(data);
+      await SecureStorageUtil.storage
+          .write(key: 'access_token', value: loggedIn.accessToken);
+
+      authCubit.login(loggedIn.accessToken, User.fromJson(data['data_user']));
+      Navigator.pushReplacementNamed(context, "/home");
+
+      debugPrint(loggedIn.accessToken);
+    } else {
+      debugPrint("failed");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Login gagal. Silakan periksa email dan password Anda.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authCubit = BlocProvider.of<AuthCubit>(context);
     double deviceWidth = MediaQuery.of(context).size.width;
     double deviceHeight = MediaQuery.of(context).size.height;
 
@@ -120,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
               AppButton(
                 type: ButtonType.PLAIN,
                 onPressed: () {
-                  nextScreen(context, '/home');
+                  sendLogin(context, authCubit);
                 },
                 text: 'Log In',
               ),

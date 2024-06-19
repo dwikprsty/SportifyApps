@@ -48,7 +48,7 @@ class LandingPage extends StatelessWidget {
                 type: ButtonType.PLAIN,
                 text: "Get Started!",
                 onPressed: () {
-                  nextScreen(context, "/register");
+                  Navigator.pushReplacementNamed(context, "/register");
                 },
               ),
               const SizedBox(height: 50),
