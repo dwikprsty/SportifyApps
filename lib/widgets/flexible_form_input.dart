@@ -17,6 +17,7 @@ class FlexibleInputWidget extends StatelessWidget {
   final dynamic onTap;
   final bool readOnly;
   final bool isDropdown;
+  final TextInputType? keyboardType;
 
   const FlexibleInputWidget({
     super.key,
@@ -35,6 +36,7 @@ class FlexibleInputWidget extends StatelessWidget {
     this.onTap,
     this.readOnly = false,
     this.isDropdown = false,
+    this.keyboardType,
   });
 
   @override
@@ -106,6 +108,7 @@ class FlexibleInputWidget extends StatelessWidget {
               onChanged: onTextChanged,
               onTap: onTap,
               readOnly: readOnly,
+              keyboardType: keyboardType,
             ),
           ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:sportify_app/dto/fields.dart';
 import 'dart:convert';
 import 'package:sportify_app/dto/register.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
@@ -69,4 +70,44 @@ class DataService {
 
     return response;
   }
+
+  Future<List<FieldDetail>> fetchFields() async {
+    final response = await http.get(Uri.parse(Endpoints.readField));
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body)['datas'];
+      return data.map((item) => FieldDetail.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load fields');
+    }
+  }
+
+  Future<void> createField(FieldDetail fieldDetail) async {
+    final response = await http.post(
+      Uri.parse(Endpoints.createField),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(fieldDetail.toJson()),
+    );
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create field');
+    }
+  }
+
+  static Future<void> updateField(FieldDetail fieldDetail) async {
+    final response = await http.put(
+      Uri.parse(Endpoints.updateField),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(fieldDetail.toJson()),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update field');
+    }
+  }
+
+  static Future<void> deleteField(String idLapangan) async {
+    final response = await http.delete(Uri.parse(Endpoints.deleteField));
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete field');
+    }
+  }
+
 }

@@ -1,15 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sportify_app/dto/fields.dart';
+import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/screens/field_detail_screen.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/search_form.dart';
+import 'package:sportify_app/services/data_service.dart'; 
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -20,8 +22,8 @@ class _HomePageState extends State<HomePage> {
   void _selectActivity(String activity) {
     setState(() {
       _selectedActivity = activity;
-      _searchQuery = ''; 
-      _searchController.clear(); 
+      _searchQuery = '';
+      _searchController.clear();
     });
   }
 
@@ -31,274 +33,165 @@ class _HomePageState extends State<HomePage> {
     });
     if (kDebugMode) {
       print('Search query updated: $_searchQuery');
-    } 
+    }
   }
 
   Widget _buildFieldList(String sport) {
-    List<Map<String, String>> fieldList = [];
+    final dataService = DataService();
+    return FutureBuilder<List<FieldDetail>>(
+      future: dataService.fetchFields(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No results found'));
+        } else {
+          debugPrint('Refetch field list');
+          List<FieldDetail> fieldList = snapshot.data!;
+          List<FieldDetail> filteredList = fieldList
+              .where((field) =>
+                  field.jenisLapangan == sport &&
+                  (field.courtName
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase()) ||
+                      field.location
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase())))
+              .toList();
 
-    switch (sport) {
-      case 'Badminton':
-        fieldList = [
-          {
-            'fileName': 'catra_badminton.jpg',
-            'courtName': 'Catra Badminton',
-            'location': 'Penglatan, Buleleng'
-          },
-          {
-            'fileName': 'padma_badminton.jpg',
-            'courtName': 'Padma Badminton Hall',
-            'location': 'Banyuning, Buleleng'
-          },
-          {
-            'fileName': 'pradnya_badminton.jpg',
-            'courtName': 'Pradnya Badminton Hall',
-            'location': 'Jl Kartini, Singaraja'
-          },
-          {
-            'fileName': 'undiksha_badminton.jpg',
-            'courtName': 'Undiksha Badminton Hall',
-            'location': 'Jl Udayana, Singaraja'
-          },
-        ];
-        break;
-      case 'Volleyball':
-        fieldList = [
-          {
-            'fileName': 'gunaksa_volley.jpg',
-            'courtName': 'Gunaksa Volley',
-            'location': 'Jl Ahmad Yani, Singaraja'
-          },
-          {
-            'fileName': 'merdeka_volley.jpg',
-            'courtName': 'Merdeka Volley',
-            'location': 'Jl Gatot Subroto, Singaraja'
-          },
-          {
-            'fileName': 'bina_volley.jpg',
-            'courtName': 'Bina Volley',
-            'location': 'Gitgit, Buleleng'
-          },
-          {
-            'fileName': 'garuda_volley.jpg',
-            'courtName': 'Garuda Volley',
-            'location': 'Jl Kartini, Singaraja'
-          },
-          {
-            'fileName': 'pratama_volley.jpg',
-            'courtName': 'Pratama Volley',
-            'location': 'Kubutambahan, Buleleng'
-          },
-        ];
-        break;
-      case 'Basketball':
-        fieldList = [
-          {
-            'fileName': 'bhuana_patra_basketball.jpg',
-            'courtName': 'GOR Bhuana Patra',
-            'location': 'Jl Udayana, Singaraja'
-          },
-          {
-            'fileName': 'pelita_agung_basketball.jpg',
-            'courtName': 'Pelita Agung Basketball',
-            'location': 'Jl Kartini, Singaraja'
-          },
-          {
-            'fileName': 'senayan_basketball.jpeg',
-            'courtName': 'Senayan Basketball',
-            'location': 'Jl Ahmad Yani, Singaraja'
-          },
-          {
-            'fileName': 'undiksha_basketball.jpg',
-            'courtName': 'Undiksha Basketball',
-            'location': 'Jl Udayana, Singaraja'
-          },
-        ];
-        break;
-      case 'Futsal':
-        fieldList = [
-          {
-            'fileName': 'amerta_futsal.jpg',
-            'courtName': 'Amerta Futsal',
-            'location': 'Banyuasri, Singaraja'
-          },
-          {
-            'fileName': 'catra_futsal.jpg',
-            'courtName': 'Catra Futsal',
-            'location': 'Penglatan, Buleleng'
-          },
-          {
-            'fileName': 'sifut_futsal.jpg',
-            'courtName': 'Singaraja Futsal',
-            'location': 'Jl Udayana, Singaraja'
-          },
-          {
-            'fileName': 'tirta_futsal.jpg',
-            'courtName': 'Tirta Futsal',
-            'location': 'Seririt, Buleleng'
-          },
-        ];
-        break;
-      case 'Tennis':
-        fieldList = [
-          {
-            'fileName': 'amed_tennis.jpg',
-            'courtName': 'Amed Tennis',
-            'location': 'Banyuning, Singaraja'
-          },
-          {
-            'fileName': 'bintang_tennis.jpg',
-            'courtName': 'Bintang Tennis',
-            'location': 'Jl Ahmad Yani, Singaraja'
-          },
-          {
-            'fileName': 'dinata_tennis.jpg',
-            'courtName': 'Dinata Tennis Court',
-            'location': 'Jl Gatot Subroto, Singaraja'
-          },
-          {
-            'fileName': 'handara_tennis.jpg',
-            'courtName': 'Handara Tennis',
-            'location': 'Gitgit, Buleleng'
-          },
-          {
-            'fileName': 'rans_tennis.jpg',
-            'courtName': 'RANS Tennis',
-            'location': 'Kubutambahan, Buleleng'
-          },
-        ];
-        break;
-    }
-
-    // Filter fieldList based on search query
-    List<Map<String, String>> filteredList = fieldList.where((field) {
-      bool matchesCourtName = field['courtName']!
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
-      bool matchesLocation =
-          field['location']!.toLowerCase().contains(_searchQuery.toLowerCase());
-      if (kDebugMode) {
-        print(
-          'Matching ${field['courtName']} - court name: $matchesCourtName, location: $matchesLocation');
-      }
-      return matchesCourtName || matchesLocation;
-    }).toList();
-
-    return Expanded(
-      child: filteredList.isEmpty
-          ? const Center(
-              child: Text(
-                'No results found',
-                style: TextStyle(color: Colors.grey, fontSize: 18),
-              ),
-            )
-          : ListView.builder(
-              itemCount: filteredList.length,
-              itemBuilder: (context, index) {
-                String fileName = filteredList[index]['fileName']!;
-                String courtName = filteredList[index]['courtName']!;
-                String location = filteredList[index]['location']!;
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FieldDetailScreen(
-                          fieldDetail: FieldDetail(
-                            fileName: fileName,
-                            imageFile: 'assets/images/$fileName',
-                            courtName: courtName,
-                            location: location,
-                            description: 'A detailed description of the court.',
-                            price: 50.0, 
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 15),
-                        child: Stack(
-                          children: [
-                            SizedBox(
-                              width: 350,
-                              height: 170,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/$fileName',
-                                      fit: BoxFit.cover,
-                                    ),
-                                    Container(
-                                      decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Constants.primaryColor,
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+          return Expanded(
+            child: filteredList.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No results found',
+                      style: TextStyle(color: Colors.grey, fontSize: 18),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: filteredList.length,
+                    itemBuilder: (context, index) {
+                      FieldDetail field = filteredList[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FieldDetailScreen(
+                                fieldDetail: field,
                               ),
                             ),
-                            Positioned(
-                              bottom: 10,
-                              left: 0,
-                              right: 0,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      courtName,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 15),
+                              child: Stack(
+                                children: [
+                                  SizedBox(
+                                    width: 350,
+                                    height: 170,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          FadeInImage.assetNetwork(
+                                            placeholder:
+                                                'assets/images/home_bg.jpg',
+                                            image:
+                                                '${Endpoints.showImage}/${field.gambarLapangan}',
+                                            fit: BoxFit.cover,
+                                            // Handle network error gracefully
+
+                                            placeholderErrorBuilder:
+                                                (context, error, stackTrace) {
+                                              debugPrint(
+                                                  'Error loading image: $error');
+                                              return Image.asset(
+                                                'assets/images/image_error.jpg',
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                            imageErrorBuilder:
+                                                (context, error, stackTrace) {
+                                              debugPrint('Error: $error');
+                                              return Container();
+                                            },
+                                            fadeOutDuration:
+                                                const Duration(seconds: 30),
+                                          ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  Colors.transparent,
+                                                  Constants.primaryColor,
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          location,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w300,
-                                            fontSize: 14,
+                                  ),
+                                  Positioned(
+                                    bottom: 10,
+                                    left: 0,
+                                    right: 0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            field.courtName,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.location_on,
+                                                color: Colors.white,
+                                                size: 16,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                field.location,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w300,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+          );
+        }
+      },
     );
   }
 
@@ -323,66 +216,66 @@ class _HomePageState extends State<HomePage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 10, 30),
                   child: Stack(
-  children: [
-    Container(
-      //container slide banner
-      width: 350,
-      height: 180,
-      decoration: const BoxDecoration(
-        color: Constants.primaryColor,
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-        image: DecorationImage(
-          image: AssetImage("assets/images/home_bg.jpg"),
-          fit: BoxFit.cover,
-        ),
-      ),
-    ),
-    Container(
-      width: 350,
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color.fromARGB(255, 1, 42, 58).withOpacity(0.8), 
-            Colors.transparent,            
-          ],
-        ),
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.fromLTRB(10, 30, 20, 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Hi, Dwik!',
-            style: TextStyle(
-                color: Constants.scaffoldBackgroundColor),
-          ),
-          const Text(
-            "What you would \nlike to do?",
-            style: TextStyle(
-              color: Constants.scaffoldBackgroundColor,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 10),
-          SearchWidget(
-            hintText: "Find a field",
-            height: 35,
-            controller: _searchController,
-            onChanged: _updateSearchQuery,
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-
+                    children: [
+                      Container(
+                        width: 350,
+                        height: 180,
+                        decoration: const BoxDecoration(
+                          color: Constants.primaryColor,
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          image: DecorationImage(
+                            image: AssetImage("assets/images/home_bg.jpg"),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 350,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20)),
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color.fromARGB(255, 1, 42, 58)
+                                  .withOpacity(0.8),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 30, 20, 15),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Hi, Dwik!',
+                              style: TextStyle(
+                                  color: Constants.scaffoldBackgroundColor),
+                            ),
+                            const Text(
+                              "What you would \nlike to do?",
+                              style: TextStyle(
+                                color: Constants.scaffoldBackgroundColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            SearchWidget(
+                              hintText: "Find a field",
+                              height: 35,
+                              controller: _searchController,
+                              onChanged: _updateSearchQuery,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SingleChildScrollView(
                   child: Container(
@@ -416,7 +309,7 @@ class _HomePageState extends State<HomePage> {
                               _buildActivityButton(
                                 image: "assets/images/basketball.jpg",
                                 label: "Basketball",
-                                activity: 'Basketball',
+                                activity: 'Basket',
                               ),
                               _buildActivityButton(
                                 image: "assets/images/futsal.jpg",
@@ -431,7 +324,7 @@ class _HomePageState extends State<HomePage> {
                               _buildActivityButton(
                                 image: "assets/images/volley.jpg",
                                 label: "Volleyball",
-                                activity: 'Volleyball',
+                                activity: 'Voli',
                               ),
                             ],
                           ),
@@ -460,10 +353,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Widget untuk membangun tombol aktivitas
-  Widget _buildActivityButton(
-      {required String image,
-      required String label,
-      required String activity}) {
+  Widget _buildActivityButton({
+    required String image,
+    required String label,
+    required String activity,
+  }) {
     bool isSelected = _selectedActivity == activity;
 
     return Column(
@@ -476,9 +370,6 @@ class _HomePageState extends State<HomePage> {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(image),
-              ),
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
                 color: isSelected ? Constants.primaryColor : Colors.transparent,
@@ -494,6 +385,10 @@ class _HomePageState extends State<HomePage> {
                   offset: const Offset(0, 3),
                 ),
               ],
+              image: DecorationImage(
+                image: AssetImage(image),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),

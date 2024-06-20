@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/dto/fields.dart';
+import 'package:sportify_app/screens/admin/edit_field_info.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/utils/helper.dart';
 import 'package:sportify_app/widgets/button.dart';
@@ -17,7 +18,6 @@ class FieldDetailScreen extends StatefulWidget {
   });
 
   @override
-// ignore: library_private_types_in_public_api
   _FieldDetailScreenState createState() => _FieldDetailScreenState();
 }
 
@@ -25,13 +25,12 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
   String? _selectedDate;
   String? _selectedTime;
   String? _selectedDuration;
-  bool isAdmin = true;
+  bool isAdmin = true; 
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    isAdmin = context.read<AuthCubit>().state.dataUser!.isAdmin; 
+    isAdmin = context.read<AuthCubit>().state.dataUser!.isAdmin;
   }
 
   final List<String> _times = [
@@ -86,7 +85,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
             gradient: RadialGradient(
               colors: [
                 Color.fromARGB(255, 90, 137, 158),
-                Constants.scaffoldBackgroundColor
+                Constants.scaffoldBackgroundColor,
               ],
               focal: Alignment.center,
               radius: 1.0,
@@ -97,14 +96,13 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    'assets/images/${field.fileName}',
-                    width: MediaQuery.of(context).size.width,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
+                Image.network(
+                  field.gambarLapangan, // URL gambar lapangan dari API
+                  width: MediaQuery.of(context).size.width,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.error), // Menangani error jika gambar gagal dimuat
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -123,32 +121,6 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Uncomment if using Google Maps
-                // Container(
-                //   width: double.infinity,
-                //   height: 200,
-                //   child: GoogleMap(
-                //     initialCameraPosition: CameraPosition(
-                //       target: LatLng(field.latitude, field.longitude),
-                //       zoom: 14,
-                //     ),
-                //     markers: {
-                //       Marker(
-                //         markerId: MarkerId(field.courtName),
-                //         position: LatLng(field.latitude, field.longitude),
-                //         infoWindow: InfoWindow(title: field.courtName),
-                //       ),
-                //     },
-                //   ),
-                // ),
-                const SizedBox(height: 10),
-                Text(
-                  'Hourly price:  \$${field.price.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 Row(
                   children: [
                     const Icon(Icons.location_on),
@@ -214,10 +186,13 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                       ? AppButton(
                           type: ButtonType.PRIMARY,
                           onPressed: () {
-                            nextScreen(
+                            Navigator.push(
                               context,
-                              '/edit-field-info',
-                              arguments: field,
+                              MaterialPageRoute(
+                                builder: (context) => EditFieldScreen(
+                                  field: field,
+                                ),
+                              ),
                             );
                           },
                           text: 'Edit',
@@ -225,6 +200,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                       : AppButton(
                           type: ButtonType.PRIMARY,
                           onPressed: () {
+                            // Implement booking functionality
                           },
                           text: 'Book Now',
                         ),

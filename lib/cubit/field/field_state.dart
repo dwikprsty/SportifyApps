@@ -2,7 +2,11 @@ import 'package:sportify_app/dto/fields.dart';
 
 // Field state
 class FieldState {
-  final FieldDetail fieldDetail;
+  final List<FieldDetail> listFieldDetail;
 
-  FieldState({required this.fieldDetail});
+  FieldState({required this.listFieldDetail});
+}
+
+final class FieldInitial extends FieldState {
+  FieldInitial() : super(listFieldDetail: []);
 }
