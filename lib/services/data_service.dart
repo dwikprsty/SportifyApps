@@ -3,11 +3,13 @@ import 'package:http/http.dart' as http;
 import 'package:sportify_app/dto/fields.dart';
 import 'dart:convert';
 import 'package:sportify_app/dto/register.dart';
+import 'package:sportify_app/dto/reservation.dart';
+import 'package:sportify_app/dto/user.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/utils/secure_storage_util.dart';
 
 class DataService {
-  Future<bool> registerUser(Register registerData) async {
+  static Future<bool> registerUser(Register registerData) async {
     var url = Uri.parse(Endpoints.register);
     var headers = {'Content-Type': 'application/json'};
     var body = json.encode({
@@ -71,7 +73,7 @@ class DataService {
     return response;
   }
 
-  Future<List<FieldDetail>> fetchFields() async {
+  static Future<List<FieldDetail>> fetchFields() async {
     final response = await http.get(Uri.parse(Endpoints.readField));
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body)['datas'];
@@ -81,7 +83,7 @@ class DataService {
     }
   }
 
-  Future<void> createField(FieldDetail fieldDetail) async {
+  static Future<void> createField(FieldDetail fieldDetail) async {
     final response = await http.post(
       Uri.parse(Endpoints.createField),
       headers: {'Content-Type': 'application/json'},
@@ -104,9 +106,100 @@ class DataService {
   }
 
   static Future<void> deleteField(String idLapangan) async {
-    final response = await http.delete(Uri.parse(Endpoints.deleteField));
+    final url = Uri.parse('${Endpoints.deleteField}/$idLapangan');
+    final response = await http.delete(url);
+
     if (response.statusCode != 200) {
-      throw Exception('Failed to delete field');
+      throw Exception('Failed to delete field: ${response.body}');
+    }
+  }
+
+  static Future<void> createReservation(Reservation reservation) async {
+    final response = await http.post(
+      Uri.parse(Endpoints.createReservation),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(reservation.toJson()),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create reservation');
+    }
+  }
+
+  static Future<List<String>> fetchSessionTimes() async {
+  final response = await http.get(Uri.parse(Endpoints.readSession));
+
+  if (response.statusCode == 200) {
+    final List sessions = json.decode(response.body)['datas'];
+    return sessions.map<String>((session) => session['waktu'] as String).toList();
+  } else {
+    throw Exception('Failed to load session times');
+  }
+
+  
+}
+
+static Future<User> fetchUserById(int id) async {
+  final response = await http.get(Uri.parse('${Endpoints.readUser}/$id'));
+
+  if (response.statusCode == 200) {
+    return User.fromJson(json.decode(response.body));
+  } else {
+    throw Exception('Failed to load user');
+  }
+}
+
+  static Future<User> createUser(User user) async {
+    final response = await http.post(
+      Uri.parse(Endpoints.createUser),
+      body: {
+        'id_pengguna': user.id.toString(),
+        'jenis_pengguna': user.isAdmin ? 'admin' : 'user',
+        'nama_pengguna': user.namaPengguna,
+        'email': user.email,
+        'kata_sandi': user.password, // Jangan lupa tambahkan password di model User
+        'nickname': user.nickname,
+        'alamat': user.alamat,
+        'jenis_kelamin': user.jenisKelamin,
+        'tgl_lahir': user.tglLahir.toIso8601String(),
+        'no_telp': user.noTelp,
+      },
+    );
+
+    if (response.statusCode == 201) {
+      return User.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to create user');
+    }
+  }
+
+  // data_service.dart
+static Future<void> updateUser(User user) async {
+  final response = await http.put(
+    Uri.parse('${Endpoints.updateUser}/${user.id}'),
+    body: {
+      'jenis_pengguna': user.isAdmin ? 'admin' : 'user',
+      'nama_pengguna': user.namaPengguna,
+      'email': user.email,
+      'kata_sandi': user.password,
+      'nickname': user.nickname,
+      'alamat': user.alamat,
+      'jenis_kelamin': user.jenisKelamin,
+      'tgl_lahir': user.tglLahir.toIso8601String(),
+      'no_telp': user.noTelp,
+    },
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Failed to update user');
+  }
+}
+
+  static Future<void> deleteUser(String id) async {
+    final response = await http.delete(Uri.parse(Endpoints.deleteUser));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete user');
     }
   }
 

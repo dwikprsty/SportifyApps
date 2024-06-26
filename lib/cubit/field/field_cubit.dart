@@ -9,9 +9,8 @@ class FieldCubit extends Cubit<FieldState> {
 
   void fetchField() async {
     debugPrint('Processing field data..');
-    DataService dataService = DataService();
     List<FieldDetail> listField;
-    listField = await dataService.fetchFields();
+    listField = await DataService.fetchFields();
     emit(FieldState(listFieldDetail: listField));
   }
 }

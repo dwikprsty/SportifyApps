@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sportify_app/utils/constants.dart';
-import 'package:sportify_app/utils/helper.dart';
 import 'package:sportify_app/widgets/button.dart';
 
 class LandingPage extends StatelessWidget {

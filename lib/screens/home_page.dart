@@ -5,10 +5,10 @@ import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/screens/field_detail_screen.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/search_form.dart';
-import 'package:sportify_app/services/data_service.dart'; 
+import 'package:sportify_app/services/data_service.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -37,9 +37,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildFieldList(String sport) {
-    final dataService = DataService();
     return FutureBuilder<List<FieldDetail>>(
-      future: dataService.fetchFields(),
+      future: DataService.fetchFields(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -100,25 +99,26 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           FadeInImage.assetNetwork(
                                             placeholder:
-                                                'assets/images/home_bg.jpg',
+                                                'assets/images/loading_image.png',
                                             image:
                                                 '${Endpoints.showImage}/${field.gambarLapangan}',
                                             fit: BoxFit.cover,
-                                            // Handle network error gracefully
-
                                             placeholderErrorBuilder:
                                                 (context, error, stackTrace) {
                                               debugPrint(
                                                   'Error loading image: $error');
                                               return Image.asset(
-                                                'assets/images/image_error.jpg',
+                                                'assets/images/failed_placeholder.png',
                                                 fit: BoxFit.cover,
                                               );
                                             },
                                             imageErrorBuilder:
                                                 (context, error, stackTrace) {
                                               debugPrint('Error: $error');
-                                              return Container();
+                                              return Image.asset(
+                                                'assets/images/failed_image.png',
+                                                fit: BoxFit.cover,
+                                              );
                                             },
                                             fadeOutDuration:
                                                 const Duration(seconds: 30),
@@ -309,7 +309,7 @@ class _HomePageState extends State<HomePage> {
                               _buildActivityButton(
                                 image: "assets/images/basketball.jpg",
                                 label: "Basketball",
-                                activity: 'Basket',
+                                activity: 'Basketball',
                               ),
                               _buildActivityButton(
                                 image: "assets/images/futsal.jpg",
@@ -324,7 +324,7 @@ class _HomePageState extends State<HomePage> {
                               _buildActivityButton(
                                 image: "assets/images/volley.jpg",
                                 label: "Volleyball",
-                                activity: 'Voli',
+                                activity: 'Volleyball',
                               ),
                             ],
                           ),

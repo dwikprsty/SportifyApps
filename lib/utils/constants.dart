@@ -8,8 +8,8 @@ class Constants {
   static const Color secondaryColor = Color(0xFF355c6e);
 }
 
-final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ');
-final DateFormat formatDate = DateFormat('yyyy-MM-dd H:mm');
-const tokenStoreName = "access_token";
+final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'IDR ');
+// final DateFormat formatDate = DateFormat('yyyy-MM-dd H:mm');
+// const tokenStoreName = "access_token";
 
 

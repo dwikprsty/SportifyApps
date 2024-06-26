@@ -1,5 +1,3 @@
-import 'package:sportify_app/dto/user.dart';
-
 class Login {
   final String accessToken;
   final String tokenType;

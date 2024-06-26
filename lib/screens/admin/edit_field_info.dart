@@ -5,9 +5,9 @@ import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
+import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
-import 'package:sportify_app/services/data_service.dart';
 
 class EditFieldScreen extends StatefulWidget {
   final FieldDetail field;
@@ -36,7 +36,7 @@ class _EditFieldScreenState extends State<EditFieldScreen> {
         TextEditingController(text: widget.field.description);
     _priceController =
         TextEditingController(text: widget.field.price.toString());
-    _imagePath = widget.field.gambarLapangan ?? '';
+    _imagePath = widget.field.gambarLapangan;
     _locationController = TextEditingController(text: widget.field.location);
   }
 
@@ -122,45 +122,11 @@ class _EditFieldScreenState extends State<EditFieldScreen> {
       // Handle response (success or error)
       if (response.statusCode == 201) {
         debugPrint('Data and image posted successfully!');
-        Navigator.pop(context);
-        Navigator.pop(context);
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pop(context, true);
       } else {
         debugPrint('Error posting data: ${response.statusCode}');
       }
     });
-  }
-
-  // void _saveField() async {
-  //   FieldDetail updatedField = FieldDetail(
-  //     idLapangan: widget.field.idLapangan,
-  //     idJenisLapangan: widget.field.idJenisLapangan,
-  //     courtName: _nameController.text,
-  //     description: _descriptionController.text,
-  //     location: _locationController.text,
-  //     price: int.parse(_priceController.text),
-  //     gambarLapangan: _imagePath,
-  //   );
-
-  //   try {
-  //     await DataService.updateField(updatedField);
-  //     // Show success message or navigate back
-  //   } catch (e) {
-  //     // Handle error
-  //     print('Error updating field: $e');
-  //     // Show error message
-  //   }
-  // }
-
-  void _deleteField() async {
-    try {
-      await DataService.deleteField(widget.field.idLapangan);
-      // Show success message or navigate back
-    } catch (e) {
-      // Handle error
-      print('Error deleting field: $e');
-      // Show error message
-    }
   }
 
   @override
@@ -194,59 +160,66 @@ class _EditFieldScreenState extends State<EditFieldScreen> {
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
-              Row(
+              Stack(
+                alignment: Alignment.center,
                 children: [
                   galleryFile == null
                       ? FadeInImage.assetNetwork(
-                          placeholder: 'assets/images/home_bg.jpg',
+                          placeholder: 'assets/images/loading_image.png',
                           image: '${Endpoints.showImage}/$_imagePath',
                           fit: BoxFit.cover,
-                          width: 100,
-                          height: 100,
+                          width: 350,
+                          height: 170,
                           placeholderErrorBuilder:
                               (context, error, stackTrace) {
                             debugPrint('Error loading image: $error');
-                            return Container();
+                            return Image.asset(
+                              'assets/images/failed_placeholder.png',
+                              fit: BoxFit.cover,
+                            );
                           },
                           imageErrorBuilder: (context, error, stackTrace) {
                             debugPrint('Error: $error');
-                            return Container();
+                            return Image.asset(
+                              'assets/images/failed_image.png',
+                              fit: BoxFit.cover,
+                            );
                           },
                           fadeOutDuration: const Duration(seconds: 30),
                         )
                       : Image.file(
                           galleryFile!,
-                          width: 100,
-                          height: 100,
+                          width: 350,
+                          height: 170,
                           fit: BoxFit.cover,
                         ),
-                  const SizedBox(width: 10),
+                  Container(
+                    width: 350,
+                    height: 170,
+                    color: Colors.black.withOpacity(0.5), // Opacity 0.5
+                  ),
                   ElevatedButton(
+                    style: const ButtonStyle(
+                        backgroundColor:
+                            MaterialStatePropertyAll(Constants.activeMenu)),
                     onPressed: () {
                       _showPicker(context: context);
                     },
-                    child: const Text('Pick Image'),
+                    child: const Text(
+                      'Pick Image',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 40),
               Center(
-                child: Column(
-                  children: [
-                    AppButton(
-                      type: ButtonType.PRIMARY,
-                      onPressed: () {
-                        _postDataWithImage(context);
-                      },
-                      text: 'Save',
-                    ),
-                    const SizedBox(height: 10),
-                    AppButton(
-                      type: ButtonType.PRIMARY,
-                      onPressed: _deleteField,
-                      text: 'Delete',
-                    ),
-                  ],
+                child: AppButton(
+                  type: ButtonType.PRIMARY,
+                  onPressed: () {
+                    _postDataWithImage(context);
+                  },
+                  text: 'Save',
                 ),
               ),
             ],

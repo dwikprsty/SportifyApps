@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       debugPrint("failed");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content:
                 Text('Login gagal. Silakan periksa email dan password Anda.'),
             backgroundColor: Colors.red,

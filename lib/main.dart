@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sportify_app/cubit/auth/auth_cubit.dart';
-import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/screens/about_page.dart';
-import 'package:sportify_app/screens/admin/edit_field_info.dart';
 import 'package:sportify_app/screens/history_page.dart';
 import 'package:sportify_app/screens/home_page.dart';
 import 'package:sportify_app/screens/landing_page.dart';

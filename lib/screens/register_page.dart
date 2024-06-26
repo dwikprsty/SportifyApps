@@ -3,20 +3,20 @@ import 'package:sportify_app/dto/register.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
-import 'package:sportify_app/services/data_service.dart'; // Import DataService
+import 'package:sportify_app/services/data_service.dart'; 
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({super.key});
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -128,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         _passwordController.text.isEmpty ||
                         _confirmPasswordController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Please fill in all fields.'),
                           backgroundColor: Colors.red,
                         ),
@@ -140,7 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (_passwordController.text !=
                         _confirmPasswordController.text) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Passwords do not match.'),
                           backgroundColor: Colors.red,
                         ),
@@ -154,16 +154,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       password: _passwordController.text,
                     );
 
-                    DataService dataService = DataService();
                     bool registrationSuccessful =
-                        await dataService.registerUser(registerData);
+                        await DataService.registerUser(registerData);
                     if (registrationSuccessful) {
-                      // Navigate to home page or show success message
                       Navigator.pushReplacementNamed(context, "/login");
                     } else {
-                      // Show error message to the user
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content:
                               Text('Failed to register. Please try again.'),
                           backgroundColor: Colors.red,
