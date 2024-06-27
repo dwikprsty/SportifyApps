@@ -233,7 +233,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                                   _selectedTime = value!;
                                 });
                               },
-                              fillColor: Constants.scaffoldBackgroundColor,
+                              // fillColor: Constants.scaffoldBackgroundColor,
                             ),
                           ),
                         ],

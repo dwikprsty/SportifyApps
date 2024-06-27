@@ -18,9 +18,10 @@ class FlexibleInputWidget extends StatelessWidget {
   final bool readOnly;
   final bool isDropdown;
   final TextInputType? keyboardType;
+  final bool enabled; // Tambahkan properti enabled
 
   const FlexibleInputWidget({
-    super.key,
+    Key? key,
     required this.hintText,
     this.topLabel = "",
     this.value,
@@ -37,7 +38,8 @@ class FlexibleInputWidget extends StatelessWidget {
     this.readOnly = false,
     this.isDropdown = false,
     this.keyboardType,
-  });
+    this.enabled = true, // Tambahkan properti enabled dengan nilai default true
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,7 @@ class FlexibleInputWidget extends StatelessWidget {
           ),
         if (isDropdown)
           DropdownButtonFormField<String>(
-            value: value,
+            value: value?.isNotEmpty == true && items?.contains(value) == true ? value : null,
             hint: Text(hintText),
             items: items?.map((String item) {
               return DropdownMenuItem<String>(
@@ -85,6 +87,7 @@ class FlexibleInputWidget extends StatelessWidget {
             ),
             child: TextFormField(
               controller: controller,
+              enabled: enabled, // Gunakan properti enabled di dalam TextFormField
               obscureText: obscureText,
               decoration: InputDecoration(
                 enabledBorder: const OutlineInputBorder(

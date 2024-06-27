@@ -1,5 +1,5 @@
 class User {
-  final int id;
+  final int idPengguna;
   final String namaPengguna;
   final String email;
   final String jenisKelamin;
@@ -8,10 +8,10 @@ class User {
   final String nickname;
   final String noTelp;
   final DateTime tglLahir;
-  final String password; // Tambahkan field password
+  String fotoProfil;
 
   User({
-    required this.id,
+    required this.idPengguna,
     required this.namaPengguna,
     required this.email,
     required this.jenisKelamin,
@@ -20,36 +20,38 @@ class User {
     required this.nickname,
     required this.noTelp,
     required this.tglLahir,
-    required this.password, 
+    required this.fotoProfil,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id_pengguna'],
-      namaPengguna: json['nama_pengguna'],
-      email: json['email'],
-      jenisKelamin: json['jenis_kelamin'],
-      isAdmin: json['jenis_pengguna'] == 'admin',
-      alamat: json['alamat'],
-      nickname: json['nickname'],
-      noTelp: json['no_telp'],
-      tglLahir: DateTime.parse(json['tgl_lahir']),
-      password: json['kata_sandi'], 
+      idPengguna: json['id_pengguna'] as int,
+      isAdmin: json['jenis_pengguna'] as String == 'admin' ? true : false,
+      alamat: json['alamat'] as String? ?? '',
+      fotoProfil: json['foto_profil'] as String? ?? '',
+      nickname: json['nickname'] as String? ?? '',
+      namaPengguna: json['username'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      jenisKelamin: json['gender'] as String? ?? '',
+      tglLahir: json['birthday'] != null
+          ? DateTime.parse(json['birthday'])
+          : DateTime.now(),
+      noTelp: json['phone_number'] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id_pengguna': id,
+      'id_pengguna': idPengguna,
+      'jenis_pengguna': isAdmin ? 'admin' : 'customer',
       'nama_pengguna': namaPengguna,
       'email': email,
-      'jenis_kelamin': jenisKelamin,
-      'jenis_pengguna': isAdmin ? 'admin' : 'user',
-      'alamat': alamat,
       'nickname': nickname,
-      'no_telp': noTelp,
+      'alamat': alamat,
+      'jenis_kelamin': jenisKelamin,
       'tgl_lahir': tglLahir.toIso8601String(),
-      'kata_sandi': password, 
+      'no_telp': noTelp,
+      'foto_profil': fotoProfil,
     };
   }
 }

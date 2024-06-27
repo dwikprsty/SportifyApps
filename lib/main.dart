@@ -75,10 +75,6 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (BuildContext context) {
         return const HistoryPage();
       });
-// case "/setting":
-// return MaterialPageRoute(builder: (BuildContext context) {
-// return const SettingPage();
-// });
     case "/profile":
       return MaterialPageRoute(builder: (BuildContext context) {
         return const ProfilePage();
@@ -91,10 +87,6 @@ Route<dynamic> _onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (BuildContext context) {
         return const NotificationPage();
       });
-    // case "/edit-field-info":
-    //   return MaterialPageRoute(builder: (BuildContext context) {
-    //     return EditFieldScreen(field: field, dataService: DataService);
-    //   });
     default:
       return MaterialPageRoute(builder: (BuildContext context) {
         return const LandingPage();
