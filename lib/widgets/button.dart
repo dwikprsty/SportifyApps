@@ -9,16 +9,21 @@ enum ButtonType { PRIMARY, PLAIN }
 
 class AppButton extends StatelessWidget {
   final ButtonType type;
-  final VoidCallback onPressed;
+  final Function()? onPressed;
   final String text;
+  final Function()? updateProfile;
 
   const AppButton(
-      {super.key, required this.type, required this.onPressed, required this.text});
+      {super.key,
+      required this.type,
+      required this.onPressed,
+      required this.text,
+      this.updateProfile});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onPressed,
+      onTap: updateProfile ?? onPressed,
       child: Container(
         width: ScreenUtil().setWidth(250.0),
         height: ScreenUtil().setHeight(50.0),

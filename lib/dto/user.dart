@@ -30,7 +30,7 @@ class User {
       alamat: json['alamat'] as String? ?? '',
       fotoProfil: json['foto_profil'] as String? ?? '',
       nickname: json['nickname'] as String? ?? '',
-      namaPengguna: json['username'] as String? ?? '',
+      namaPengguna: json['nama_pengguna'] as String? ?? '',
       email: json['email'] as String? ?? '',
       jenisKelamin: json['gender'] as String? ?? '',
       tglLahir: json['birthday'] != null

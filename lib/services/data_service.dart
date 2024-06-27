@@ -23,21 +23,21 @@ class DataService {
 
       if (response.statusCode == 201) {
         // Registration successful
-        print('Registration successful');
+        debugPrint('Registration successful');
         return true;
       } else if (response.statusCode == 400) {
         // Handle validation errors or duplicate email
         var jsonResponse = json.decode(response.body);
-        print('Registration failed: ${jsonResponse['msg']}');
+        debugPrint('Registration failed: ${jsonResponse['msg']}');
         return false;
       } else {
         // Handle other errors
-        print('Failed to register: ${response.reasonPhrase}');
+        debugPrint('Failed to register: ${response.reasonPhrase}');
         return false;
       }
     } catch (e) {
       // Handle network errors or exceptions
-      print('Exception during registration: $e');
+      debugPrint('Exception during registration: $e');
       return false;
     }
   }

@@ -16,7 +16,7 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   bool rememberMe = false;
   bool _isObscure = true;
 
-  Future<void> sendLogin(BuildContext context, AuthCubit authCubit) async {
+  Future<void> sendLogin(context, AuthCubit authCubit) async {
     final email = _emailController.text;
     final password = _passwordController.text;
 
@@ -43,16 +43,17 @@ class _LoginPageState extends State<LoginPage> {
       debugPrint(loggedIn.accessToken);
     } else {
       debugPrint("failed");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('Login gagal. Silakan periksa email dan password Anda.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      loginFailed();
     }
+  }
+
+  void loginFailed() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Login gagal. Silakan periksa email dan password Anda.'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override

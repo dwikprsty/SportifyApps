@@ -18,7 +18,7 @@ class EditFieldScreen extends StatefulWidget {
   });
 
   @override
-  _EditFieldScreenState createState() => _EditFieldScreenState();
+  State<EditFieldScreen> createState() => _EditFieldScreenState();
 }
 
 class _EditFieldScreenState extends State<EditFieldScreen> {

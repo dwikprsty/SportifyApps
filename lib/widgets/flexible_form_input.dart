@@ -21,7 +21,7 @@ class FlexibleInputWidget extends StatelessWidget {
   final bool enabled; // Tambahkan properti enabled
 
   const FlexibleInputWidget({
-    Key? key,
+    super.key,
     required this.hintText,
     this.topLabel = "",
     this.value,
@@ -39,7 +39,7 @@ class FlexibleInputWidget extends StatelessWidget {
     this.isDropdown = false,
     this.keyboardType,
     this.enabled = true, // Tambahkan properti enabled dengan nilai default true
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

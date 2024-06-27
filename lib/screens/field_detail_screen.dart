@@ -19,7 +19,7 @@ class FieldDetailScreen extends StatefulWidget {
   });
 
   @override
-  _FieldDetailScreenState createState() => _FieldDetailScreenState();
+  State<StatefulWidget> createState() => _FieldDetailScreenState();
 }
 
 class _FieldDetailScreenState extends State<FieldDetailScreen> {
@@ -48,12 +48,14 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading session times: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading session times: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -74,20 +76,26 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
   void _deleteField() async {
     try {
       await DataService.deleteField(widget.fieldDetail.idLapangan);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Field deleted successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context, true); // Navigate back to the previous screen
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Field deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting field: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting field: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -134,14 +142,17 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                           borderRadius: BorderRadius.circular(8.0),
                           child: FadeInImage.assetNetwork(
                             placeholder: 'assets/images/loading_image.png',
-                            image: '${Endpoints.showImage}/${field.gambarLapangan}',
+                            image:
+                                '${Endpoints.showImage}/${field.gambarLapangan}',
                             width: MediaQuery.of(context).size.width,
                             height: 350,
                             fit: BoxFit.cover,
                             fadeInDuration: const Duration(milliseconds: 500),
                             fadeOutDuration: const Duration(milliseconds: 500),
-                            placeholderErrorBuilder: (context, error, stackTrace) {
-                              debugPrint('Error loading placeholder image: $error');
+                            placeholderErrorBuilder:
+                                (context, error, stackTrace) {
+                              debugPrint(
+                                  'Error loading placeholder image: $error');
                               return Image.asset(
                                 'assets/images/failed_placeholder.png',
                                 fit: BoxFit.cover,
@@ -214,7 +225,8 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                             child: FlexibleInputWidget(
                               topLabel: 'Date',
                               hintText: 'Select date',
-                              controller: TextEditingController(text: _selectedDate),
+                              controller:
+                                  TextEditingController(text: _selectedDate),
                               suffixIcon: const Icon(Icons.calendar_today),
                               onTap: () => _selectDate(context),
                               readOnly: true,
