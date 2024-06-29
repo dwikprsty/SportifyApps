@@ -7,7 +7,7 @@ class User {
   final String alamat;
   final String nickname;
   final String noTelp;
-  final DateTime tglLahir;
+  final String tglLahir;
   String fotoProfil;
 
   User({
@@ -32,11 +32,9 @@ class User {
       nickname: json['nickname'] as String? ?? '',
       namaPengguna: json['nama_pengguna'] as String? ?? '',
       email: json['email'] as String? ?? '',
-      jenisKelamin: json['gender'] as String? ?? '',
-      tglLahir: json['birthday'] != null
-          ? DateTime.parse(json['birthday'])
-          : DateTime.now(),
-      noTelp: json['phone_number'] as String? ?? '',
+      jenisKelamin: json['jenis_kelamin'] as String? ?? '',
+      tglLahir: (json['tgl_lahir']) ?? DateTime.now().toIso8601String(),
+      noTelp: json['no_telp'] as String? ?? '',
     );
   }
 
@@ -49,7 +47,7 @@ class User {
       'nickname': nickname,
       'alamat': alamat,
       'jenis_kelamin': jenisKelamin,
-      'tgl_lahir': tglLahir.toIso8601String(),
+      'tgl_lahir': tglLahir,
       'no_telp': noTelp,
       'foto_profil': fotoProfil,
     };

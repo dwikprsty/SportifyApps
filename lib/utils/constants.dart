@@ -9,7 +9,9 @@ class Constants {
 }
 
 final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'IDR ');
-// final DateFormat formatDate = DateFormat('yyyy-MM-dd H:mm');
+// FormatException (FormatException: Trying to read yyyy from Sat, 29 Jun 2024 00:00:00 GMT at 0)
+final DateFormat formatDate = DateFormat('yyyy-MM-dd');
+final DateFormat formatDate2 = DateFormat('EEE, d MMM yyyy HH:mm:ss \'GMT\'');
 // const tokenStoreName = "access_token";
 
 

@@ -19,6 +19,7 @@ class FlexibleInputWidget extends StatelessWidget {
   final bool isDropdown;
   final TextInputType? keyboardType;
   final bool enabled; // Tambahkan properti enabled
+  final bool birthDay;
 
   const FlexibleInputWidget({
     super.key,
@@ -39,6 +40,8 @@ class FlexibleInputWidget extends StatelessWidget {
     this.isDropdown = false,
     this.keyboardType,
     this.enabled = true, // Tambahkan properti enabled dengan nilai default true
+    this.birthDay =
+        false, // Tambahkan properti enabled dengan nilai default true
   });
 
   @override
@@ -59,7 +62,9 @@ class FlexibleInputWidget extends StatelessWidget {
           ),
         if (isDropdown)
           DropdownButtonFormField<String>(
-            value: value?.isNotEmpty == true && items?.contains(value) == true ? value : null,
+            value: value?.isNotEmpty == true && items?.contains(value) == true
+                ? value
+                : null,
             hint: Text(hintText),
             items: items?.map((String item) {
               return DropdownMenuItem<String>(
@@ -87,8 +92,10 @@ class FlexibleInputWidget extends StatelessWidget {
             ),
             child: TextFormField(
               controller: controller,
-              enabled: enabled, // Gunakan properti enabled di dalam TextFormField
+              enabled:
+                  enabled, // Gunakan properti enabled di dalam TextFormField
               obscureText: obscureText,
+
               decoration: InputDecoration(
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
@@ -103,7 +110,7 @@ class FlexibleInputWidget extends StatelessWidget {
                 hintText: hintText,
                 hintStyle: const TextStyle(
                   fontSize: 14.0,
-                  color: Color.fromRGBO(105, 108, 121, 0.7),
+                  color: Color.fromRGBO(5, 5, 5, 0.698),
                 ),
                 prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
                 suffixIcon: suffixIcon,

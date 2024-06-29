@@ -139,9 +139,9 @@ class DataService {
     }
   }
 
-  static Future<User> fetchUser() async {
-    final response = await http.get(Uri.parse(Endpoints.readUser));
-
+  static Future<User> fetchUser(String idPengguna) async {
+    final response =
+        await http.get(Uri.parse('${Endpoints.readUser}/$idPengguna'));
     if (response.statusCode == 200) {
       return User.fromJson(json.decode(response.body)['datas'][0]);
     } else {
@@ -162,87 +162,4 @@ class DataService {
       throw Exception('Failed to update user');
     }
   }
-
-  // static Future<void> updateUser(User user) async {
-  //   final response = await http.put(
-  //     Uri.parse('${Endpoints.updateUser}/${user.idPengguna}'),
-  //     body: {
-  //       'jenis_pengguna': user.isAdmin ? 'admin' : 'user',
-  //       'nama_pengguna': user.namaPengguna,
-  //       'email': user.email,
-  //       'nickname': user.nickname,
-  //       'alamat': user.alamat,
-  //       'jenis_kelamin': user.jenisKelamin,
-  //       'tgl_lahir': user.tglLahir.toIso8601String(),
-  //       'no_telp': user.noTelp,
-  //     },
-  //   );
-
-  //   if (response.statusCode != 200) {
-  //     throw Exception('Failed to update user');
-  //   }
-  // }
-
-  // static Future<User> fetchUser() async {
-  //   final response = await http.get(Uri.parse(Endpoints.readUser));
-
-  //   if (response.statusCode == 200) {
-  //     return User.fromJson(json.decode(response.body)['datas']
-  //         [0]); // Sesuaikan dengan struktur response
-  //   } else {
-  //     throw Exception('Failed to load user');
-  //   }
-  // }
-
-  // static Future<User> createUser(User user) async {
-  //   final response = await http.post(
-  //     Uri.parse(Endpoints.createUser),
-  //     body: {
-  //       'id_pengguna': user.idPengguna.toString(),
-  //       'jenis_pengguna': user.isAdmin ? 'admin' : 'user',
-  //       'nama_pengguna': user.namaPengguna,
-  //       'email': user.email,
-  //       'nickname': user.nickname,
-  //       'alamat': user.alamat,
-  //       'jenis_kelamin': user.jenisKelamin,
-  //       'tgl_lahir': user.tglLahir.toIso8601String(),
-  //       'no_telp': user.noTelp,
-  //     },
-  //   );
-
-  //   if (response.statusCode == 201) {
-  //     return User.fromJson(json.decode(response.body));
-  //   } else {
-  //     throw Exception('Failed to create user');
-  //   }
-  // }
-
-  // // data_service.dart
-  // static Future<void> updateUser(User user) async {
-  //   final response = await http.put(
-  //     Uri.parse('${Endpoints.updateUser}/${user.idPengguna}'),
-  //     body: {
-  //       'jenis_pengguna': user.isAdmin ? 'admin' : 'user',
-  //       'nama_pengguna': user.namaPengguna,
-  //       'email': user.email,
-  //       'nickname': user.nickname,
-  //       'alamat': user.alamat,
-  //       'jenis_kelamin': user.jenisKelamin,
-  //       'tgl_lahir': user.tglLahir.toIso8601String(),
-  //       'no_telp': user.noTelp,
-  //     },
-  //   );
-
-  //   if (response.statusCode != 200) {
-  //     throw Exception('Failed to update user');
-  //   }
-  // }
-
-  // static Future<void> deleteUser(String id) async {
-  //   final response = await http.delete(Uri.parse(Endpoints.deleteUser));
-
-  //   if (response.statusCode != 200) {
-  //     throw Exception('Failed to delete user');
-  //   }
-  // }
 }

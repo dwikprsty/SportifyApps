@@ -1,11 +1,11 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
+import 'package:sportify_app/services/data_service.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
@@ -28,11 +28,11 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _phoneController = TextEditingController();
 
   bool isEditing = false;
-  bool isEditingProfileImage =
-      false; // Flag untuk menampilkan icon upload gambar
+  bool isEditingProfileImage = false;
 
   File? galleryFile;
   final picker = ImagePicker();
+  late String userProfileImageUrl;
 
   @override
   void initState() {
@@ -44,14 +44,22 @@ class _ProfilePageState extends State<ProfilePage> {
     final user = context.read<AuthCubit>().state.dataUser;
     if (user != null) {
       _nicknameController.text = user.nickname;
-      _usernameController.text = user.namaPengguna;
-      debugPrint('test ${user.namaPengguna}');
+      _usernameController.text = '@${user.namaPengguna}';
       _addressController.text = user.alamat;
       _emailController.text = user.email;
+      debugPrint(user.noTelp);
       _phoneController.text = user.noTelp;
       _selectedGender = user.jenisKelamin;
-      _selectedBirthday = user.tglLahir.toIso8601String().split('T')[0];
-      _birthdayController.text = _selectedBirthday!;
+      _selectedBirthday = user.tglLahir;
+      debugPrint(user.tglLahir);
+      _birthdayController.text = formatDate.format(user.tglLahir.contains('GMT')
+          ? formatDate2.parse(user.tglLahir)
+          : DateTime.parse(user.tglLahir));
+      _selectedGender = user.jenisKelamin;
+
+      // Load user profile image URL from API
+      userProfileImageUrl =
+          '${Endpoints.showImage}/${user.fotoProfil}'; // Adjust the endpoint according to your API
     }
   }
 
@@ -127,18 +135,25 @@ class _ProfilePageState extends State<ProfilePage> {
       request.files.add(multipartFile);
     }
 
-    request.send().then((response) {
+    request.send().then((response) async {
       // Handle response (success or error)
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully')),
         );
-        _toggleEditing();
+        final dataUser = await DataService.fetchUser(
+            context.read<AuthCubit>().state.dataUser!.idPengguna.toString());
+        debugPrint(dataUser.toString());
+        context.read<AuthCubit>().updateUser(dataUser);
+        _loadUserData();
+        setState(() {
+          _toggleEditing();
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content:
-                  Text('Failed to update profile: ${response.statusCode}')),
+            content: Text('Failed to update profile: ${response.statusCode}'),
+          ),
         );
       }
     });
@@ -163,10 +178,18 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       isEditing = !isEditing;
       if (!isEditing) {
-        // Clear galleryFile ketika keluar dari mode edit
-        galleryFile = null;
+        // Clear galleryFile when exiting edit mode if not editing profile image
+        if (!isEditingProfileImage) {
+          galleryFile = null;
+        }
       }
-      isEditingProfileImage = isEditing; // Atur tampilan icon upload gambar
+      isEditingProfileImage = isEditing;
+
+      // Remove @ prefix if present and update the username field
+      String currentUsername = _usernameController.text.trim();
+      if (currentUsername.isNotEmpty && currentUsername.startsWith('@')) {
+        _usernameController.text = currentUsername.substring(1); // Remove @
+      }
     });
   }
 
@@ -201,24 +224,47 @@ class _ProfilePageState extends State<ProfilePage> {
                           children: [
                             CircleAvatar(
                               radius: 48,
-                              backgroundColor: isEditing
-                                  ? Colors.grey.shade400
-                                  : Constants.primaryColor,
-                              child: Container(
-                                width: 96,
-                                height: 96,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    image: galleryFile != null
-                                        ? FileImage(galleryFile!)
-                                            as ImageProvider
-                                        : NetworkImage(
-                                            '${Endpoints.showImage}/${context.read<AuthCubit>().state.dataUser?.fotoProfil}',
-                                          ) as ImageProvider,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                              backgroundImage:
+                                  const AssetImage('assets/images/avatar.png'),
+                              child: ClipOval(
+                                child: galleryFile != null
+                                    ? Image.file(
+                                        galleryFile!,
+                                        fit: BoxFit.cover,
+                                        width: 100,
+                                        height: 100,
+                                      )
+                                    : FadeInImage.assetNetwork(
+                                        placeholder: 'assets/images/avatar.png',
+                                        image:
+                                            '${Endpoints.showImage}/${context.read<AuthCubit>().state.dataUser!.fotoProfil}',
+                                        fit: BoxFit.cover,
+                                        placeholderErrorBuilder:
+                                            (context, error, stackTrace) {
+                                          debugPrint(
+                                              'Error loading image: $error');
+                                          return Image.asset(
+                                            'assets/images/avatar_loading.png',
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100,
+                                          );
+                                        },
+                                        imageErrorBuilder:
+                                            (context, error, stackTrace) {
+                                          debugPrint('Error: $error');
+                                          return Image.asset(
+                                            'assets/images/avatar_error.png',
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100,
+                                          );
+                                        },
+                                        fadeOutDuration:
+                                            const Duration(seconds: 60),
+                                        width: 100,
+                                        height: 100,
+                                      ),
                               ),
                             ),
                             if (isEditing)
@@ -240,14 +286,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          context
-                                  .read<AuthCubit>()
-                                  .state
-                                  .dataUser
-                                  ?.namaPengguna ??
+                          context.read<AuthCubit>().state.dataUser?.nickname ??
                               "User",
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          '@${context.read<AuthCubit>().state.dataUser?.namaPengguna ?? " "}',
+                          style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 10),
                         FlexibleInputWidget(
@@ -262,6 +309,19 @@ class _ProfilePageState extends State<ProfilePage> {
                           topLabel: "Username",
                           controller: _usernameController,
                           readOnly: !isEditing,
+                          onChanged: isEditing
+                              ? (value) {
+                                  // Check if input is not empty and not starts with @
+                                  if (value != null &&
+                                      value.isNotEmpty &&
+                                      !value.startsWith('@')) {
+                                    _usernameController.text = '@$value';
+                                  } else {
+                                    // If already starts with @ or empty, leave it as is
+                                    _usernameController.text = value ?? '';
+                                  }
+                                }
+                              : null,
                         ),
                         const SizedBox(height: 15),
                         FlexibleInputWidget(
@@ -279,7 +339,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 topLabel: 'Gender',
                                 hintText: "Select gender",
                                 value: _selectedGender,
-                                items: const ["Man", "Woman"],
+                                items: const ["man", "woman"],
                                 onChanged: isEditing
                                     ? (value) {
                                         setState(() {
@@ -295,9 +355,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: FlexibleInputWidget(
                                 hintText: "Your birthday",
                                 suffixIcon: const Icon(Icons.calendar_today),
-                                topLabel: "Birthday",
+                                // topLabel: "Birthday",
+                                topLabel: 'Birthday',
                                 controller: _birthdayController,
                                 readOnly: true,
+                                birthDay: true,
                                 onTap: isEditing
                                     ? () => _selectDate(context)
                                     : null,

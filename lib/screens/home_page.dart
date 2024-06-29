@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/screens/field_detail_screen.dart';
@@ -18,6 +20,19 @@ class _HomePageState extends State<HomePage> {
   String _selectedActivity = 'Badminton';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  void _fetchUserData() {
+    final user = context.read<AuthCubit>().state.dataUser;
+    if (user != null) {
+      user.nickname;
+    }
+  }
 
   void _selectActivity(String activity) {
     setState(() {
@@ -251,10 +266,15 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Hi, Dwik!',
-                              style: TextStyle(
-                                  color: Constants.scaffoldBackgroundColor),
+                            BlocBuilder<AuthCubit, AuthState>(
+                              builder: (context, state) {
+                                return Text(
+                                  'Hi, ${state.dataUser?.nickname ?? ""}',
+                                  style: const TextStyle(
+                                    color: Constants.scaffoldBackgroundColor,
+                                  ),
+                                );
+                              },
                             ),
                             const Text(
                               "What you would \nlike to do?",

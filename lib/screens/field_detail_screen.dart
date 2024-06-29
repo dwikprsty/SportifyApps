@@ -5,10 +5,10 @@ import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/screens/admin/edit_field_info.dart';
+import 'package:sportify_app/services/data_service.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
-import 'package:sportify_app/services/data_service.dart';
 
 class FieldDetailScreen extends StatefulWidget {
   final FieldDetail fieldDetail;
@@ -19,7 +19,7 @@ class FieldDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => _FieldDetailScreenState();
+  State<FieldDetailScreen> createState() => _FieldDetailScreenState();
 }
 
 class _FieldDetailScreenState extends State<FieldDetailScreen> {
@@ -97,6 +97,70 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
         );
       }
     }
+  }
+
+  void _bookNow() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Booking Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Nama: ${context.read<AuthCubit>().state.dataUser!.nickname}"),
+              Text("Email: ${context.read<AuthCubit>().state.dataUser!.email}"),
+              Text("Nama Lapangan: ${widget.fieldDetail.courtName}"),
+              Text("Harga Per Jam: IDR ${widget.fieldDetail.price}"),
+              if (_selectedDate != null) Text("Tanggal: $_selectedDate"),
+              if (_selectedTime != null) Text("Session: $_selectedTime"),
+              const SizedBox(height: 20),
+              Text(
+                "Total Harga: IDR ${_calculateTotalPrice()}",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Booking confirmed!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  double _calculateTotalPrice() {
+    // Implement your logic to calculate total price based on selected date and time
+    // Example: multiply hourly price by number of hours booked
+    double hourlyPrice = widget.fieldDetail.price.toDouble(); // Convert to double if necessary
+    int hours = 1; // Default to 1 hour booking
+    // Example: calculate hours based on selected session time
+    if (_selectedTime == "Morning") {
+      hours = 2;
+    } else if (_selectedTime == "Afternoon") {
+      hours = 3;
+    } else if (_selectedTime == "Evening") {
+      hours = 4;
+    }
+    return hourlyPrice * hours;
   }
 
   @override
@@ -282,9 +346,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                               )
                             : AppButton(
                                 type: ButtonType.PRIMARY,
-                                onPressed: () {
-                                  // Implement booking functionality
-                                },
+                                onPressed: _bookNow,
                                 text: 'Book Now',
                               ),
                       ),
