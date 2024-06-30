@@ -4,11 +4,14 @@ import 'package:sportify_app/dto/fields.dart';
 import 'dart:convert';
 import 'package:sportify_app/dto/register.dart';
 import 'package:sportify_app/dto/reservation.dart';
+import 'package:sportify_app/dto/session.dart';
 import 'package:sportify_app/dto/user.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/utils/secure_storage_util.dart';
 
 class DataService {
+
+//Authentication
   static Future<bool> registerUser(Register registerData) async {
     var url = Uri.parse(Endpoints.register);
     var headers = {'Content-Type': 'application/json'};
@@ -73,6 +76,7 @@ class DataService {
     return response;
   }
 
+//CRUD Fields
   static Future<List<FieldDetail>> fetchFields() async {
     final response = await http.get(Uri.parse(Endpoints.readField));
     if (response.statusCode == 200) {
@@ -114,31 +118,22 @@ class DataService {
     }
   }
 
-  static Future<void> createReservation(Reservation reservation) async {
-    final response = await http.post(
-      Uri.parse(Endpoints.createReservation),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(reservation.toJson()),
-    );
-
-    if (response.statusCode != 201) {
-      throw Exception('Failed to create reservation');
-    }
-  }
-
-  static Future<List<String>> fetchSessionTimes() async {
+ 
+  static Future<List<Session>> fetchSessionTimes() async {
     final response = await http.get(Uri.parse(Endpoints.readSession));
-
+    
     if (response.statusCode == 200) {
-      final List sessions = json.decode(response.body)['datas'];
-      return sessions
-          .map<String>((session) => session['waktu'] as String)
-          .toList();
+      final List<dynamic> data = jsonDecode(response.body)['datas'];
+      List<Session> sessionTimes = data.map((item) => Session.fromJson(item)).toList();
+      
+      return sessionTimes;
     } else {
       throw Exception('Failed to load session times');
     }
   }
 
+
+//User
   static Future<User> fetchUser(String idPengguna) async {
     final response =
         await http.get(Uri.parse('${Endpoints.readUser}/$idPengguna'));
@@ -162,4 +157,17 @@ class DataService {
       throw Exception('Failed to update user');
     }
   }
+
+//Reservation
+static Future<void> createReservation(Reservation reservation) async {
+    final response = await http.post(
+      Uri.parse(Endpoints.createReservation),
+      body: reservation,
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create reservation: ${response.body}');
+    }
+  }
+
 }

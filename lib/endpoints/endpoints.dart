@@ -21,7 +21,7 @@ class Endpoints {
   static String get readSession => "$baseURL/api/read/sessions";
 
 //endpoints reservation
-  static String get createReservation => "$baseURL/api/create/reservation";
+  static String get createReservation => "$baseURL/api/create/reservasi";
 
 //endpoints users
   static String get readUser => "$baseURL/api/read/user";

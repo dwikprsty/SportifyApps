@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/screens/about_page.dart';
+import 'package:sportify_app/screens/admin/create_field.dart';
 import 'package:sportify_app/screens/history_page.dart';
 import 'package:sportify_app/screens/home_page.dart';
 import 'package:sportify_app/screens/landing_page.dart';
@@ -106,14 +107,34 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  List<Widget> _pages = [];
+  List<String> _appBarTitles = [];
 
-  final List<Widget> _page = [
-    const HomePage(),
-    const HistoryPage(),
-    const ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    final isAdmin = context.read<AuthCubit>().state.dataUser!.isAdmin;
+    if (isAdmin) {
+      _pages = [
+        const HomePage(),
+        const HistoryPage(),
+        const CreateFields(),
+      ];
+      _appBarTitles = ['Sportify', 'History', 'Add Field'];
+    } else {
+      _pages = [
+        const HomePage(),
+        const HistoryPage(),
+        const ProfilePage(),
+      ];
+      _appBarTitles = ['Sportify', 'History', 'Profile'];
+    }
 
-  final List<String> _appBarTitles = const ['Sportify', 'History', 'Profile'];
+    // Ensure the selectedIndex is within the valid range
+    if (_selectedIndex >= _pages.length) {
+      _selectedIndex = 0;
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -139,7 +160,7 @@ class _MainScreenState extends State<MainScreen> {
             },
           ),
         ],
-      ), //drawer
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -154,7 +175,9 @@ class _MainScreenState extends State<MainScreen> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      nextScreen(context, '/profile');
+                      if (!context.read<AuthCubit>().state.dataUser!.isAdmin) {
+                        nextScreen(context, '/profile');
+                      }
                     },
                     child: const CircleAvatar(
                       radius: 40,
@@ -208,12 +231,12 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
-      body: _page[_selectedIndex],
+      body: _pages[_selectedIndex],
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Constants.scaffoldBackgroundColor,
         buttonBackgroundColor: Constants.primaryColor,
-        items: const [
-          CurvedNavigationBarItem(
+        items: [
+          const CurvedNavigationBarItem(
             child: Icon(
               Icons.home,
               color: Constants.activeMenu,
@@ -221,20 +244,26 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
             labelStyle: TextStyle(color: Constants.activeMenu),
           ),
+          const CurvedNavigationBarItem(
+            child: Icon(
+              Icons.history,
+              color: Constants.activeMenu,
+            ),
+            label: 'History',
+            labelStyle: TextStyle(color: Constants.activeMenu),
+          ),
           CurvedNavigationBarItem(
-              child: Icon(
-                Icons.history,
-                color: Constants.activeMenu,
-              ),
-              label: 'History',
-              labelStyle: TextStyle(color: Constants.activeMenu)),
-          CurvedNavigationBarItem(
-              child: Icon(
-                Icons.person,
-                color: Constants.activeMenu,
-              ),
-              label: 'Profile',
-              labelStyle: TextStyle(color: Constants.activeMenu)),
+            child: Icon(
+              context.read<AuthCubit>().state.dataUser!.isAdmin
+                  ? Icons.add
+                  : Icons.person,
+              color: Constants.activeMenu,
+            ),
+            label: context.read<AuthCubit>().state.dataUser!.isAdmin
+                ? 'Add Field'
+                : 'Profile',
+            labelStyle: const TextStyle(color: Constants.activeMenu),
+          ),
         ],
         onTap: _onItemTapped,
         color: Constants.primaryColor,

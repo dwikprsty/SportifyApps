@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
@@ -9,6 +10,7 @@ import 'package:sportify_app/services/data_service.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/button.dart';
 import 'package:sportify_app/widgets/flexible_form_input.dart';
+import 'package:sportify_app/dto/session.dart';
 
 class FieldDetailScreen extends StatefulWidget {
   final FieldDetail fieldDetail;
@@ -24,10 +26,10 @@ class FieldDetailScreen extends StatefulWidget {
 
 class _FieldDetailScreenState extends State<FieldDetailScreen> {
   String? _selectedDate;
-  String? _selectedTime;
-  bool isAdmin = true;
-  List<String> _times = [];
+  Session? _selectedSession;
+  List<Session> _sessions = [];
   bool _isLoading = true;
+  bool isAdmin = true;
 
   @override
   void initState() {
@@ -38,13 +40,12 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
 
   Future<void> _loadSessionTimes() async {
     try {
-      final times = await DataService.fetchSessionTimes();
+      final sessions = await DataService.fetchSessionTimes();
       setState(() {
-        _times = times;
+        _sessions = sessions;
         _isLoading = false;
       });
     } catch (e) {
-      // Handle error appropriately
       setState(() {
         _isLoading = false;
       });
@@ -73,6 +74,79 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
     }
   }
 
+  DateTime convertStringToDateTime(String dateString, String timeString) {
+    final DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm");
+    return dateFormat.parse("$dateString $timeString");
+  }
+
+  String convertTimeStringToDateTime(String timeString) {
+    final DateFormat timeFormat = DateFormat("HH:mm");
+    final DateTime time = timeFormat.parse(timeString);
+    final DateFormat newTimeFormat = DateFormat("HH:mm:ss");
+    return newTimeFormat.format(time);
+  }
+
+  void _bookNow() async {
+    try {
+      if (_selectedDate == null || _selectedSession == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a date and session.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final selectedDateTime = convertStringToDateTime(
+        _selectedDate!,
+        convertTimeStringToDateTime(_selectedSession!.waktu),
+      );
+
+      final response = await http.post(
+        Uri.parse(Endpoints.createReservation),
+        body: {
+          'id_pengguna':
+              context.read<AuthCubit>().state.dataUser!.idPengguna.toString(),
+          'id_lapangan': widget.fieldDetail.idLapangan,
+          'id_sesi': _selectedSession!.idSesi,
+          'tgl_sewa': DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime),
+          'harga': widget.fieldDetail.price.toString(),
+        },
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Booking confirmed!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (response.statusCode == 400) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Waktu Sudah Berlalu'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to book: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   void _deleteField() async {
     try {
       await DataService.deleteField(widget.fieldDetail.idLapangan);
@@ -97,70 +171,6 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
         );
       }
     }
-  }
-
-  void _bookNow() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Booking Details"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Nama: ${context.read<AuthCubit>().state.dataUser!.nickname}"),
-              Text("Email: ${context.read<AuthCubit>().state.dataUser!.email}"),
-              Text("Nama Lapangan: ${widget.fieldDetail.courtName}"),
-              Text("Harga Per Jam: IDR ${widget.fieldDetail.price}"),
-              if (_selectedDate != null) Text("Tanggal: $_selectedDate"),
-              if (_selectedTime != null) Text("Session: $_selectedTime"),
-              const SizedBox(height: 20),
-              Text(
-                "Total Harga: IDR ${_calculateTotalPrice()}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Booking confirmed!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  double _calculateTotalPrice() {
-    // Implement your logic to calculate total price based on selected date and time
-    // Example: multiply hourly price by number of hours booked
-    double hourlyPrice = widget.fieldDetail.price.toDouble(); // Convert to double if necessary
-    int hours = 1; // Default to 1 hour booking
-    // Example: calculate hours based on selected session time
-    if (_selectedTime == "Morning") {
-      hours = 2;
-    } else if (_selectedTime == "Afternoon") {
-      hours = 3;
-    } else if (_selectedTime == "Evening") {
-      hours = 4;
-    }
-    return hourlyPrice * hours;
   }
 
   @override
@@ -251,9 +261,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                             'IDR :',
                             style: TextStyle(fontSize: 18),
                           ),
-                          const SizedBox(
-                            width: 5,
-                          ),
+                          const SizedBox(width: 5),
                           Text(
                             field.price.toString(),
                             style: const TextStyle(
@@ -281,6 +289,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
+                      if (!isAdmin)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -302,14 +311,16 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                               isDropdown: true,
                               topLabel: 'Session',
                               hintText: 'Select Session',
-                              value: _selectedTime,
-                              items: _times,
+                              value: _selectedSession?.waktu,
+                              items: _sessions
+                                  .map((session) => session.waktu)
+                                  .toList(),
                               onChanged: (value) {
                                 setState(() {
-                                  _selectedTime = value!;
+                                  _selectedSession = _sessions.firstWhere(
+                                      (session) => session.waktu == value);
                                 });
                               },
-                              // fillColor: Constants.scaffoldBackgroundColor,
                             ),
                           ),
                         ],

@@ -129,29 +129,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       SizedBox(height: deviceHeight * 0.01),
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                rememberMe = !rememberMe;
-                              });
-                            },
-                            child: Icon(
-                              rememberMe
-                                  ? Icons.check_box_rounded
-                                  : Icons.check_box_outline_blank_rounded,
-                              color: Constants.secondaryColor,
-                            ),
-                          ),
-                          const Text("Remember me"),
-                          const Spacer(),
-                          const Text(
-                            "Forgot password",
-                            style: TextStyle(color: Constants.secondaryColor),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
