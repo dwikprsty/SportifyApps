@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sportify_app/cubit/auth/auth_cubit.dart';
+import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/screens/about_page.dart';
 import 'package:sportify_app/screens/admin/create_field.dart';
 import 'package:sportify_app/screens/history_page.dart';
@@ -118,7 +119,7 @@ class _MainScreenState extends State<MainScreen> {
       _pages = [
         const HomePage(),
         const HistoryPage(),
-        const CreateFields(),
+        const CreateFieldScreen(),
       ];
       _appBarTitles = ['Sportify', 'History', 'Add Field'];
     } else {
@@ -130,7 +131,6 @@ class _MainScreenState extends State<MainScreen> {
       _appBarTitles = ['Sportify', 'History', 'Profile'];
     }
 
-    // Ensure the selectedIndex is within the valid range
     if (_selectedIndex >= _pages.length) {
       _selectedIndex = 0;
     }
@@ -179,25 +179,49 @@ class _MainScreenState extends State<MainScreen> {
                         nextScreen(context, '/profile');
                       }
                     },
-                    child: const CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Constants.primaryColor,
-                      child: CircleAvatar(
-                        backgroundImage:
-                            AssetImage('assets/images/basketball.jpg'),
-                        radius: 38,
+                    child: ClipOval(
+                      child: FadeInImage.assetNetwork(
+                        placeholder: 'assets/images/avatar.png',
+                        image:
+                            '${Endpoints.showImage}/${context.read<AuthCubit>().state.dataUser!.fotoProfil}',
+                        fit: BoxFit.cover,
+                        placeholderErrorBuilder: (context, error, stackTrace) {
+                          debugPrint('Error loading image: $error');
+                          return Image.asset(
+                            'assets/images/avatar_loading.png',
+                            fit: BoxFit.cover,
+                            width: 70,
+                            height: 70,
+                          );
+                        },
+                        imageErrorBuilder: (context, error, stackTrace) {
+                          debugPrint('Error: $error');
+                          return Image.asset(
+                            'assets/images/avatar_error.png',
+                            fit: BoxFit.cover,
+                            width: 70,
+                            height: 70,
+                          );
+                        },
+                        fadeOutDuration: const Duration(seconds: 60),
+                        width: 70,
+                        height: 70,
                       ),
                     ),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  const Text(
-                    'Dwi Prasetyanti',
-                    style: TextStyle(
-                        color: Constants.primaryColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
+                  Text(
+                    context.read<AuthCubit>().state.dataUser?.nickname ??
+                        "User",
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '@${context.read<AuthCubit>().state.dataUser?.namaPengguna ?? " "}',
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),

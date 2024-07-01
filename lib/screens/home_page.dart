@@ -5,9 +5,9 @@ import 'package:sportify_app/cubit/auth/auth_cubit.dart';
 import 'package:sportify_app/dto/fields.dart';
 import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/screens/field_detail_screen.dart';
+import 'package:sportify_app/services/data_service.dart';
 import 'package:sportify_app/utils/constants.dart';
 import 'package:sportify_app/widgets/search_form.dart';
-import 'package:sportify_app/services/data_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,11 +20,16 @@ class _HomePageState extends State<HomePage> {
   String _selectedActivity = 'Badminton';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  int _currentPage = 1;
+  final int _pageSize = 5;
+  final List<FieldDetail> _fields = [];
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _loadFields();
   }
 
   void _fetchUserData() {
@@ -39,174 +44,200 @@ class _HomePageState extends State<HomePage> {
       _selectedActivity = activity;
       _searchQuery = '';
       _searchController.clear();
+      _fields.clear();
+      _currentPage = 1;
+      _loadFields();
     });
   }
 
   void _updateSearchQuery(String? query) {
     setState(() {
       _searchQuery = query ?? '';
+      _fields.clear();
+      _currentPage = 1;
+      _loadFields();
     });
     if (kDebugMode) {
       print('Search query updated: $_searchQuery');
     }
   }
 
-  Widget _buildFieldList(String sport) {
-    return FutureBuilder<List<FieldDetail>>(
-      future: DataService.fetchFields(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No results found'));
-        } else {
-          debugPrint('Refetch field list');
-          List<FieldDetail> fieldList = snapshot.data!;
-          List<FieldDetail> filteredList = fieldList
-              .where((field) =>
-                  field.jenisLapangan == sport &&
-                  (field.courtName
-                          .toLowerCase()
-                          .contains(_searchQuery.toLowerCase()) ||
-                      field.location
-                          .toLowerCase()
-                          .contains(_searchQuery.toLowerCase())))
-              .toList();
+  Future<void> _loadFields() async {
+  if (_isLoadingMore) return;
 
-          return Expanded(
-            child: filteredList.isEmpty
-                ? const Center(
-                    child: Text(
-                      'No results found',
-                      style: TextStyle(color: Colors.grey, fontSize: 18),
+  setState(() {
+    _isLoadingMore = true;
+  });
+
+  try {
+    List<FieldDetail> newFields = await DataService.fetchFields(_currentPage, _pageSize);
+    if (!mounted) return; // Tambahkan pengecekan ini
+    setState(() {
+      _fields.addAll(newFields);
+      _currentPage++;
+    });
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error loading fields: $e');
+    }
+  } finally {
+    if (!mounted) return; // Tambahkan pengecekan ini
+    setState(() {
+      _isLoadingMore = false;
+    });
+  }
+}
+
+
+  Widget _buildFieldList(String sport) {
+    List<FieldDetail> filteredList = _fields
+        .where((field) =>
+            field.jenisLapangan == sport &&
+            (field.courtName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+             field.location.toLowerCase().contains(_searchQuery.toLowerCase())))
+        .toList();
+
+    return Expanded(
+      child: filteredList.isEmpty
+          ? const Center(
+              child: Text(
+                'No results found',
+                style: TextStyle(color: Colors.grey, fontSize: 18),
+              ),
+            )
+          : ListView.builder(
+              itemCount: filteredList.length + 1,
+              itemBuilder: (context, index) {
+                if (index == filteredList.length) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Center(
+                      child: ElevatedButton(
+                        onPressed: _loadFields,
+                        child: _isLoadingMore
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Load More'),
+                      ),
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: filteredList.length,
-                    itemBuilder: (context, index) {
-                      FieldDetail field = filteredList[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FieldDetailScreen(
-                                fieldDetail: field,
+                  );
+                }
+
+                FieldDetail field = filteredList[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FieldDetailScreen(
+                          fieldDetail: field,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 15),
+                        child: Stack(
+                          children: [
+                            SizedBox(
+                              width: 350,
+                              height: 170,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    FadeInImage.assetNetwork(
+                                      placeholder: 'assets/images/loading_image.png',
+                                      image: '${Endpoints.showImage}/${field.gambarLapangan}',
+                                      fit: BoxFit.cover,
+                                      placeholderErrorBuilder: (context, error, stackTrace) {
+                                        debugPrint('Error loading image: $error');
+                                        return Image.asset(
+                                          'assets/images/failed_placeholder.png',
+                                          fit: BoxFit.cover,
+                                        );
+                                      },
+                                      imageErrorBuilder: (context, error, stackTrace) {
+                                        debugPrint('Error: $error');
+                                        return Image.asset(
+                                          'assets/images/failed_image.png',
+                                          fit: BoxFit.cover,
+                                        );
+                                      },
+                                      fadeOutDuration: const Duration(seconds: 30),
+                                    ),
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Constants.primaryColor,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          );
-                        },
-                        child: Column(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 15),
-                              child: Stack(
-                                children: [
-                                  SizedBox(
-                                    width: 350,
-                                    height: 170,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          FadeInImage.assetNetwork(
-                                            placeholder:
-                                                'assets/images/loading_image.png',
-                                            image:
-                                                '${Endpoints.showImage}/${field.gambarLapangan}',
-                                            fit: BoxFit.cover,
-                                            placeholderErrorBuilder:
-                                                (context, error, stackTrace) {
-                                              debugPrint(
-                                                  'Error loading image: $error');
-                                              return Image.asset(
-                                                'assets/images/failed_placeholder.png',
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
-                                            imageErrorBuilder:
-                                                (context, error, stackTrace) {
-                                              debugPrint('Error: $error');
-                                              return Image.asset(
-                                                'assets/images/failed_image.png',
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
-                                            fadeOutDuration:
-                                                const Duration(seconds: 30),
-                                          ),
-                                          Container(
-                                            decoration: const BoxDecoration(
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                colors: [
-                                                  Colors.transparent,
-                                                  Constants.primaryColor,
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                            Positioned(
+                              bottom: 10,
+                              left: 0,
+                              right: 0,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      field.courtName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    bottom: 10,
-                                    left: 0,
-                                    right: 0,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            field.courtName,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20,
-                                            ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          field.location,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 14,
                                           ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.location_on,
-                                                color: Colors.white,
-                                                size: 16,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                field.location,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w300,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
-          );
-        }
-      },
+                );
+              },
+            ),
     );
   }
 
@@ -248,14 +279,12 @@ class _HomePageState extends State<HomePage> {
                         width: 350,
                         height: 180,
                         decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(20)),
+                          borderRadius: const BorderRadius.all(Radius.circular(20)),
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              const Color.fromARGB(255, 1, 42, 58)
-                                  .withOpacity(0.8),
+                              const Color.fromARGB(255, 1, 42, 58).withOpacity(0.8),
                               Colors.transparent,
                             ],
                           ),
@@ -372,7 +401,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget untuk membangun tombol aktivitas
   Widget _buildActivityButton({
     required String image,
     required String label,

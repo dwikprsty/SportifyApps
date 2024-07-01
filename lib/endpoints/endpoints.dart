@@ -1,5 +1,5 @@
 class Endpoints {
-  static  String baseURL = "http://10.0.2.2:5000";
+  static String baseURL = "http://10.0.2.2:5000";
   static void updateBaseURL(String url) {
     baseURL = url;
   }
@@ -29,4 +29,8 @@ class Endpoints {
   static String get updateUser => "$baseURL/api/user/update";
   static String get deleteUser => "$baseURL/api/delete/user";
 
+  //endpoint history
+  static String detailLapangan(String id) => "$baseURL/api/read/lapangan/$id";
+  static String detailSesi(String id) => "$baseURL/api/read/session/$id";
+  static String readReservation(int id) => "$baseURL/api/read/reservasi/$id";
 }

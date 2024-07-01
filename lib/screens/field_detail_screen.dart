@@ -86,7 +86,34 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
     return newTimeFormat.format(time);
   }
 
-  void _bookNow() async {
+  void _confirmBooking() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Booking'),
+          content: const Text('Are you sure you want to book this field?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _performBooking();
+              },
+              child: const Text('Book Now'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _performBooking() async {
     try {
       if (_selectedDate == null || _selectedSession == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -116,12 +143,7 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
       );
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Booking confirmed!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        _showBookingSuccessfulDialog();
       } else if (response.statusCode == 400) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -145,6 +167,91 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
         ),
       );
     }
+  }
+
+  void _showBookingSuccessfulDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        final userData = context.read<AuthCubit>().state.dataUser!;
+        return SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(
+                  child: Text(
+                    'BOOKING DETAILS',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                const Divider(),
+                const Text(
+                  'Total price you have to pay:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 5),
+                Center(
+                  child: Text(
+                    'IDR ${widget.fieldDetail.price}',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                const SizedBox(height: 20),
+                Text(
+                  'Name : ${userData.nickname} ',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Email Address : ${userData.email}',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Phone Number : ${userData.noTelp}',
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                const SizedBox(height: 20),
+                Text(
+                  'Fields Name : ${widget.fieldDetail.courtName}',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Location : ${widget.fieldDetail.location}',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Date : ${DateFormat('yyyy-MM-dd').format(DateTime.parse(_selectedDate!))}',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Session : ${_selectedSession!.waktu}',
+                ),
+                const SizedBox(height: 20),
+                Center(
+                    child: AppButton(
+                        type: ButtonType.PRIMARY,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        text: 'Close')),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _bookNow() {
+    _confirmBooking();
   }
 
   void _deleteField() async {
@@ -290,41 +397,41 @@ class _FieldDetailScreenState extends State<FieldDetailScreen> {
                       ),
                       const SizedBox(height: 20),
                       if (!isAdmin)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 170,
-                            child: FlexibleInputWidget(
-                              topLabel: 'Date',
-                              hintText: 'Select date',
-                              controller:
-                                  TextEditingController(text: _selectedDate),
-                              suffixIcon: const Icon(Icons.calendar_today),
-                              onTap: () => _selectDate(context),
-                              readOnly: true,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 170,
+                              child: FlexibleInputWidget(
+                                topLabel: 'Date',
+                                hintText: 'Select date',
+                                controller:
+                                    TextEditingController(text: _selectedDate),
+                                suffixIcon: const Icon(Icons.calendar_today),
+                                onTap: () => _selectDate(context),
+                                readOnly: true,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: FlexibleInputWidget(
-                              isDropdown: true,
-                              topLabel: 'Session',
-                              hintText: 'Select Session',
-                              value: _selectedSession?.waktu,
-                              items: _sessions
-                                  .map((session) => session.waktu)
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedSession = _sessions.firstWhere(
-                                      (session) => session.waktu == value);
-                                });
-                              },
+                            SizedBox(
+                              width: 170,
+                              child: FlexibleInputWidget(
+                                isDropdown: true,
+                                topLabel: 'Session',
+                                hintText: 'Select Session',
+                                value: _selectedSession?.waktu,
+                                items: _sessions
+                                    .map((session) => session.waktu)
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedSession = _sessions.firstWhere(
+                                        (session) => session.waktu == value);
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                       const SizedBox(height: 40),
                       Center(
                         child: isAdmin

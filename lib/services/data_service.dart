@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:sportify_app/dto/fields.dart';
@@ -10,7 +13,6 @@ import 'package:sportify_app/endpoints/endpoints.dart';
 import 'package:sportify_app/utils/secure_storage_util.dart';
 
 class DataService {
-
 //Authentication
   static Future<bool> registerUser(Register registerData) async {
     var url = Uri.parse(Endpoints.register);
@@ -77,26 +79,27 @@ class DataService {
   }
 
 //CRUD Fields
-  static Future<List<FieldDetail>> fetchFields() async {
-    final response = await http.get(Uri.parse(Endpoints.readField));
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body)['datas'];
-      return data.map((item) => FieldDetail.fromJson(item)).toList();
-    } else {
-      throw Exception('Failed to load fields');
-    }
+  static Future<List<FieldDetail>> fetchFields(int page, int pageSize) async {
+  final response = await http.get(Uri.parse('${Endpoints.readField}?page=$page'));
+  if (response.statusCode == 200) {
+    List<dynamic> data = json.decode(response.body)['datas'];
+    return data.map((item) => FieldDetail.fromJson(item)).toList();
+  } else {
+    throw Exception('Failed to load fields');
   }
+}
 
-  static Future<void> createField(FieldDetail fieldDetail) async {
-    final response = await http.post(
-      Uri.parse(Endpoints.createField),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(fieldDetail.toJson()),
-    );
-    if (response.statusCode != 201) {
-      throw Exception('Failed to create field');
-    }
+  static Future<void> createField(FieldDetail fieldDetail, File? galleryFile) async {
+  final response = await http.post(
+    Uri.parse(Endpoints.createField),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(fieldDetail.toJson()),
+  );
+  if (response.statusCode != 201) {
+    throw Exception('Failed to create field');
   }
+}
+
 
   static Future<void> updateField(FieldDetail fieldDetail) async {
     final response = await http.put(
@@ -118,20 +121,19 @@ class DataService {
     }
   }
 
- 
   static Future<List<Session>> fetchSessionTimes() async {
     final response = await http.get(Uri.parse(Endpoints.readSession));
-    
+
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body)['datas'];
-      List<Session> sessionTimes = data.map((item) => Session.fromJson(item)).toList();
-      
+      List<Session> sessionTimes =
+          data.map((item) => Session.fromJson(item)).toList();
+
       return sessionTimes;
     } else {
       throw Exception('Failed to load session times');
     }
   }
-
 
 //User
   static Future<User> fetchUser(String idPengguna) async {
@@ -159,7 +161,7 @@ class DataService {
   }
 
 //Reservation
-static Future<void> createReservation(Reservation reservation) async {
+  static Future<void> createReservation(Reservation reservation) async {
     final response = await http.post(
       Uri.parse(Endpoints.createReservation),
       body: reservation,
@@ -170,4 +172,48 @@ static Future<void> createReservation(Reservation reservation) async {
     }
   }
 
+  static Future<List<Reservation>> fetchBookingHistory(int id) async {
+    final response = await http.get(Uri.parse(Endpoints.readReservation(id)));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      debugPrint(
+          'fetchBookingHistory response: $responseBody'); // Tambahkan log disini
+      final List<dynamic> data = responseBody['datas'];
+      List<Reservation> bookingHistory = data.map((item) {
+        return Reservation.fromJson(item);
+      }).toList();
+
+      return bookingHistory;
+    } else {
+      throw Exception('Failed to load booking history');
+    }
+  }
+
+  static Future<FieldDetail?> fetchDetailLapangan(String id) async {
+    final response = await http.get(Uri.parse(Endpoints.detailLapangan(id)));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      debugPrint(
+          'fetchDetailLapangan response: $responseBody'); // Tambahkan log disini
+      final Map<String, dynamic> data = responseBody['datas'];
+      return data.isNotEmpty ? FieldDetail.fromJson(data) : null;
+    } else {
+      throw Exception('Failed to load field detail');
+    }
+  }
+
+  static Future<Session?> fetchDetailSession(String id) async {
+    final response = await http.get(Uri.parse(Endpoints.detailSesi(id)));
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      debugPrint(
+          'fetchDetailSession response: $responseBody'); // Tambahkan log disini
+      final Map<String, dynamic> data = responseBody['datas'];
+      return data.isNotEmpty ? Session.fromJson(data) : null;
+    } else {
+      throw Exception('Failed to load session detail');
+    }
+  }
 }
